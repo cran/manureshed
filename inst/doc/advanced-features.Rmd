@@ -1,0 +1,580 @@
+---
+title: "Advanced Features"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Advanced Features}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 6
+)
+```
+
+```{r setup}
+library(manureshed)
+```
+
+## Overview
+
+This vignette covers advanced features for power users:
+
+- Custom thresholds and parameters
+- Parallel processing for multiple years
+- State-specific analysis
+- Performance optimization
+- Custom workflows
+
+## Custom Thresholds
+
+### Understanding Thresholds
+
+The package excludes areas with little cropland from analysis. The default is 500 hectares (1,234 acres), but you can change this:
+
+```{r custom_thresholds, eval=FALSE}
+# More restrictive (exclude more areas)
+results_conservative <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  cropland_threshold = 2000  # 2000 acres instead of 1234
+)
+
+# Less restrictive (include more areas)
+results_liberal <- run_builtin_analysis(
+  scale = "huc8", 
+  year = 2016,
+  nutrients = "nitrogen",
+  cropland_threshold = 500   # 500 acres
+)
+
+# Compare the difference
+conservative_excluded <- sum(results_conservative$agricultural$N_class == "Excluded")
+liberal_excluded <- sum(results_liberal$agricultural$N_class == "Excluded")
+
+print(paste("Conservative:", conservative_excluded, "excluded"))
+print(paste("Liberal:", liberal_excluded, "excluded"))
+```
+
+### Automatic Threshold Calculation
+
+For HUC8 and HUC2 scales, the package calculates thresholds automatically based on county data:
+
+```{r auto_threshold, eval=FALSE}
+# Load data for threshold calculation
+county_data <- load_builtin_nugis("county", 2016)
+huc8_data <- load_builtin_nugis("huc8", 2016)
+
+# Calculate appropriate threshold for HUC8
+custom_threshold <- get_cropland_threshold(
+  scale = "huc8",
+  county_data = county_data,
+  target_data = huc8_data,
+  baseline_ha = 750  # Use 750 ha instead of 500 ha baseline
+)
+
+print(paste("Custom threshold:", round(custom_threshold, 2), "acres"))
+
+# Use in analysis
+results <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  cropland_threshold = custom_threshold
+)
+```
+
+## State-Specific Analysis
+
+### Single State Analysis
+
+```{r state_analysis, eval=FALSE}
+# Analyze specific states
+iowa_results <- run_state_analysis(
+  state = "IA",
+  scale = "county", 
+  year = 2016,
+  nutrients = c("nitrogen", "phosphorus"),
+  include_wwtp = TRUE
+)
+
+# Quick state analysis with maps
+texas_results <- quick_state_analysis(
+  state = "TX",
+  scale = "huc8",
+  year = 2015,
+  nutrients = "nitrogen",
+  create_maps = TRUE,
+  create_networks = TRUE
+)
+```
+
+### Multi-State Comparison
+
+```{r multi_state, eval=FALSE}
+# Compare agricultural states
+corn_belt_states <- c("IA", "IL", "IN", "NE", "OH")
+state_results <- list()
+
+for (state in corn_belt_states) {
+  state_results[[state]] <- run_state_analysis(
+    state = state,
+    scale = "county",
+    year = 2016, 
+    nutrients = "nitrogen",
+    include_wwtp = TRUE,
+    verbose = FALSE  # Reduce output
+  )
+}
+
+# Compare state summaries
+state_summary <- do.call(rbind, lapply(names(state_results), function(state) {
+  result <- state_results[[state]]
+  classes <- table(result$agricultural$N_class)
+  data.frame(
+    State = state,
+    Total_Counties = sum(classes),
+    Source_Counties = classes["Source"] %||% 0,
+    Sink_Counties = sum(classes[c("Sink_Deficit", "Sink_Fertilizer")], na.rm = TRUE),
+    Source_Percent = round((classes["Source"] %||% 0) / sum(classes) * 100, 1)
+  )
+}))
+
+print(state_summary)
+```
+
+## Batch Processing
+
+### Multiple Years
+
+```{r batch_years, eval=FALSE}
+# Analyze multiple years efficiently
+batch_results <- batch_analysis_years(
+  years = 2012:2016,
+  scale = "huc8",
+  nutrients = "nitrogen", 
+  include_wwtp = TRUE,
+  create_comparative_plots = TRUE
+)
+
+# Check which years succeeded
+successful_years <- names(batch_results$results)
+print(paste("Successful years:", paste(successful_years, collapse = ", ")))
+```
+
+### Parallel Processing
+
+For faster processing of multiple analyses:
+
+```{r parallel, eval=FALSE}
+# Use multiple CPU cores
+parallel_results <- batch_analysis_parallel(
+  years = 2014:2016,
+  n_cores = 2,  # Use 2 cores
+  scale = "county",
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# Check results
+successful <- sum(!sapply(parallel_results, function(x) "error" %in% names(x)))
+print(paste("Successful analyses:", successful, "out of", length(parallel_results)))
+```
+
+### Enhanced Batch Analysis
+
+For comprehensive batch analysis with full visualizations:
+
+```{r enhanced_batch, eval=FALSE}
+# Full batch analysis with all visualizations
+enhanced_results <- batch_analysis_enhanced(
+  years = 2015:2016,  # Use fewer years for demonstration
+  scale = "county",
+  nutrients = "nitrogen",
+  create_all_visualizations = TRUE,
+  create_comparative_plots = TRUE
+)
+```
+
+## Performance Optimization
+
+### Benchmarking
+
+Test analysis performance:
+
+```{r benchmarking, eval=FALSE}
+# Benchmark different configurations
+benchmark_results <- benchmark_analysis(
+  scale = "county",
+  year = 2016,
+  nutrients = "nitrogen",
+  n_runs = 3,
+  include_wwtp = TRUE
+)
+
+print(benchmark_results)
+
+# Compare scales
+scales_to_test <- c("county", "huc8", "huc2")
+benchmark_comparison <- list()
+
+for (scale in scales_to_test) {
+  benchmark_comparison[[scale]] <- benchmark_analysis(
+    scale = scale,
+    year = 2016,
+    nutrients = "nitrogen", 
+    n_runs = 2,
+    include_wwtp = TRUE
+  )
+}
+
+# Compare timing
+timing_comparison <- data.frame(
+  Scale = scales_to_test,
+  Mean_Time_Seconds = sapply(benchmark_comparison, function(x) x$timing$mean),
+  Memory_MB = sapply(benchmark_comparison, function(x) x$memory_mb$mean)
+)
+
+print(timing_comparison)
+```
+
+### Memory Management
+
+```{r memory_management, eval=FALSE}
+# Clear cache to free up space
+clear_data_cache()
+
+# Check package health
+health_status <- health_check(verbose = TRUE)
+
+# Test OSF connection
+connection_ok <- test_osf_connection()
+print(paste("OSF connection:", ifelse(connection_ok, "OK", "Failed")))
+```
+
+## Advanced Spatial Analysis
+
+### Transition Probabilities
+
+Analyze how nutrient classifications change across space:
+
+```{r transition_analysis, eval=FALSE}
+# Run analysis
+results <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# Calculate centroids for spatial analysis
+centroids <- add_centroid_coordinates(results$integrated$nitrogen)
+
+# Calculate transition probabilities
+agri_transitions <- calculate_transition_probabilities(
+  centroids, "N_class"
+)
+
+combined_transitions <- calculate_transition_probabilities(
+  centroids, "combined_N_class"
+)
+
+# Compare transition matrices
+print("Agricultural transitions:")
+print(agri_transitions)
+
+print("Combined (WWTP + Agricultural) transitions:")
+print(combined_transitions)
+
+# Create network plots
+create_network_plot(
+  agri_transitions, "nitrogen", "Agricultural",
+  "network_agricultural.png"
+)
+
+create_network_plot(
+  combined_transitions, "nitrogen", "Combined", 
+  "network_combined.png"
+)
+```
+
+### Spatial Statistics
+
+```{r spatial_stats, eval=FALSE}
+# Calculate spatial statistics
+library(sf)
+
+# Get results as spatial data
+spatial_results <- results$integrated$nitrogen
+
+# Calculate areas of different classifications
+class_areas <- spatial_results %>%
+  mutate(area_km2 = as.numeric(st_area(.)) / 1000000) %>%
+  st_drop_geometry() %>%
+  group_by(combined_N_class) %>%
+  summarise(
+    count = n(),
+    total_area_km2 = sum(area_km2),
+    mean_area_km2 = mean(area_km2),
+    .groups = 'drop'
+  )
+
+print(class_areas)
+
+# Find neighboring relationships
+neighbors <- st_touches(spatial_results)
+neighbor_summary <- data.frame(
+  ID = spatial_results$ID,
+  N_neighbors = lengths(neighbors),
+  Class = spatial_results$combined_N_class
+)
+
+print("Average neighbors by classification:")
+neighbor_summary %>%
+  group_by(Class) %>%
+  summarise(mean_neighbors = mean(N_neighbors), .groups = 'drop')
+```
+
+## Custom Analysis Workflows
+
+### Research-Specific Analysis
+
+```{r custom_workflow, eval=FALSE}
+# Example: Livestock-intensive regions analysis
+analyze_livestock_regions <- function(states, year = 2016) {
+  
+  results <- list()
+  
+  for (state in states) {
+    # Custom threshold for livestock regions
+    county_data <- load_builtin_nugis("county", year)
+    
+    # Calculate state-specific threshold
+    state_county <- county_data[substr(county_data$ID, 1, 2) == get_state_fips(state), ]
+    custom_threshold <- quantile(state_county$cropland, 0.25)  # 25th percentile
+    
+    # Run analysis
+    state_result <- run_state_analysis(
+      state = state,
+      scale = "county",
+      year = year,
+      nutrients = "nitrogen",
+      include_wwtp = TRUE,
+      cropland_threshold = custom_threshold,
+      verbose = FALSE
+    )
+    
+    results[[state]] <- state_result
+  }
+  
+  return(results)
+}
+
+# Apply to livestock states
+livestock_states <- c("IA", "NE", "NC", "MN")
+livestock_results <- analyze_livestock_regions(livestock_states, 2016)
+```
+
+### Time Series Analysis
+
+```{r time_series, eval=FALSE}
+# Custom time series analysis
+analyze_trends <- function(scale, years, nutrient = "nitrogen") {
+  
+  trend_data <- list()
+  
+  for (year in years) {
+    # Check if WWTP data available
+    use_wwtp <- year >= 2007 && year <= 2016
+    
+    result <- run_builtin_analysis(
+      scale = scale,
+      year = year,
+      nutrients = nutrient,
+      include_wwtp = use_wwtp,
+      save_outputs = FALSE,
+      verbose = FALSE
+    )
+    
+    # Extract classification summary
+    if (use_wwtp && "integrated" %in% names(result)) {
+      classes <- table(result$integrated[[nutrient]][[paste0("combined_", toupper(substr(nutrient, 1, 1)), "_class")]])
+    } else {
+      classes <- table(result$agricultural[[paste0(toupper(substr(nutrient, 1, 1)), "_class")]])
+    }
+    
+    trend_data[[as.character(year)]] <- list(
+      year = year,
+      wwtp_included = use_wwtp,
+      classes = classes,
+      source_count = classes["Source"] %||% 0,
+      sink_count = sum(classes[c("Sink_Deficit", "Sink_Fertilizer")], na.rm = TRUE)
+    )
+  }
+  
+  return(trend_data)
+}
+
+# Analyze nitrogen trends
+nitrogen_trends <- analyze_trends("huc8", 2008:2016, "nitrogen")
+
+# Convert to data frame for plotting
+trend_df <- do.call(rbind, lapply(nitrogen_trends, function(x) {
+  data.frame(
+    Year = x$year,
+    WWTP_Included = x$wwtp_included,
+    Source_Count = x$source_count,
+    Sink_Count = x$sink_count,
+    Total_Units = sum(x$classes)
+  )
+}))
+
+print(trend_df)
+```
+
+## Data Export and Integration
+
+### Export for Other Software
+
+```{r data_export, eval=FALSE}
+# Export for GIS software
+gis_files <- export_for_gis(
+  results,
+  output_dir = "gis_export",
+  formats = c("shapefile", "geojson")
+)
+
+# Export for publication
+pub_files <- export_for_publication(
+  results,
+  output_dir = "publication_export",
+  dpi = 600
+)
+
+# Export for policy makers
+policy_files <- export_for_policy(
+  results,
+  output_dir = "policy_export"
+)
+
+print("Created files:")
+print(c(gis_files, pub_files, policy_files))
+```
+
+### Integration with Other Packages
+
+```{r package_integration, eval=FALSE}
+# Example: Using with tigris for custom boundaries
+if (requireNamespace("tigris", quietly = TRUE)) {
+  # Get state boundary
+  ohio_boundary <- tigris::states() %>%
+    filter(STUSPS == "OH") %>%
+    st_transform(5070)  # Transform to analysis CRS
+  
+  # Spatial filter results
+  ohio_watersheds <- st_filter(results$integrated$nitrogen, ohio_boundary)
+  
+  print(paste("Ohio watersheds:", nrow(ohio_watersheds)))
+}
+
+# Example: Using with nhdplusTools for watershed delineation
+if (requireNamespace("nhdplusTools", quietly = TRUE)) {
+  # Find watershed for a specific point
+  point <- st_sfc(st_point(c(-83.0458, 42.3314)), crs = 4326)  # Detroit
+  watershed_info <- nhdplusTools::discover_nhdplus_id(point)
+  
+  # Filter results to this watershed
+  if (!is.null(watershed_info$huc8)) {
+    watershed_result <- results$integrated$nitrogen %>%
+      filter(ID == watershed_info$huc8)
+    print(watershed_result)
+  }
+}
+```
+
+## Quality Control
+
+### Advanced Validation
+
+```{r advanced_validation, eval=FALSE}
+# Comprehensive quality check
+validation_report <- list()
+
+# Check data completeness
+validation_report$completeness <- list(
+  total_units = nrow(results$agricultural),
+  missing_n_class = sum(is.na(results$agricultural$N_class)),
+  excluded_percent = sum(results$agricultural$N_class == "Excluded", na.rm = TRUE) / 
+                    nrow(results$agricultural) * 100
+)
+
+# Check balance calculations
+if ("integrated" %in% names(results)) {
+  n_data <- results$integrated$nitrogen
+  validation_report$balance_check <- list(
+    impossible_sources = sum(n_data$combined_N_surplus <= 0 & 
+                            n_data$combined_N_class == "Source", na.rm = TRUE),
+    impossible_sinks = sum(n_data$combined_N_surplus > 0 & 
+                          n_data$combined_N_class %in% c("Sink_Deficit", "Sink_Fertilizer"), na.rm = TRUE)
+  )
+}
+
+# Check spatial validity
+if (inherits(results$agricultural, "sf")) {
+  validation_report$spatial_check <- list(
+    invalid_geometries = sum(!st_is_valid(results$agricultural)),
+    crs = st_crs(results$agricultural)$input
+  )
+}
+
+print("Validation Report:")
+print(str(validation_report))
+```
+
+## Tips for Advanced Users
+
+### Performance Tips
+
+```{r performance_tips, eval=FALSE}
+# 1. Use appropriate scales
+# County: ~3000 units, good for policy analysis
+# HUC8: ~2000 units, good for watershed analysis  
+# HUC2: ~18 units, good for regional analysis
+
+# 2. Manage memory for large analyses
+gc()  # Garbage collection
+clear_data_cache()  # Clear package cache
+
+# 3. Use parallel processing for multiple years
+# But be careful not to use too many cores
+
+# 4. Save intermediate results
+save_spatial_data(results$agricultural, "intermediate_results.rds")
+```
+
+### Reproducibility
+
+```{r reproducibility, eval=FALSE}
+# Always document your analysis parameters
+analysis_params <- list(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen", 
+  cropland_threshold = 1234,
+  include_wwtp = TRUE,
+  analysis_date = Sys.Date(),
+  package_version = packageVersion("manureshed")
+)
+
+# Save parameters with results
+results$analysis_params <- analysis_params
+save_analysis_summary(results, "analysis_summary.json", format = "json")
+```
+
+This covers the main advanced features. The package is designed to be flexible for power users while remaining accessible for basic analyses.

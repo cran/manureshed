@@ -1,0 +1,1173 @@
+---
+title: "Using Your Own Data"
+author: "Olatunde D. Akanbi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using Your Own Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 6
+)
+```
+
+```{r setup}
+library(manureshed)
+```
+
+## Overview
+
+The `manureshed` package includes data from 1987-2016, but you can add your own:
+
+- **WWTP data** for years outside 2007-2016
+- **Agricultural data** from other sources  
+- **Custom spatial boundaries**
+- **Industrial or urban nutrient sources**
+
+## Using Custom WWTP Data
+
+### For Years Outside 2007-2016
+
+The package has WWTP data for 2007-2016. For other years, provide your own:
+
+```{r custom_wwtp_basic, eval=FALSE}
+# Use your WWTP files for 2020
+results_2020 <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2020,  # Agricultural data available 1987-2016
+  nutrients = "nitrogen",
+  include_wwtp = TRUE,
+  custom_wwtp_nitrogen = "nitrogen_2021.csv",
+  wwtp_load_units = "kg"
+)
+
+# 3. Check results
+summarize_results(results_custom)
+quick_check(results_custom)
+
+# 4. Create maps
+nitrogen_map <- map_agricultural_classification(
+  results_custom$integrated$nitrogen,
+  "nitrogen", "combined_N_class",
+  "2021 Nitrogen with Custom WWTP Data"
+)
+
+save_plot(nitrogen_map, "custom_analysis_2021.png")
+
+# 5. Save results
+save_spatial_data(
+  results_custom$integrated$nitrogen,
+  "nitrogen_2021_results.rds"
+)
+```
+
+This example shows the complete workflow from custom data to final maps and saved results.
+
+## Advanced Custom Data Integration
+
+### Adding Other Nutrient Sources
+
+You can integrate additional nutrient sources beyond WWTP:
+
+```{r other_sources, eval=FALSE}
+# Example: Adding industrial sources
+industrial_data <- data.frame(
+  Facility_Name = c("Steel Plant A", "Chemical Plant B", "Food Processor C"),
+  Lat = c(41.5, 40.7, 42.1),
+  Long = c(-81.7, -82.1, -83.5),
+  N_Load_tons = c(50, 75, 30),
+  P_Load_tons = c(10, 15, 8),
+  Source_Type = "Industrial"
+)
+
+# Convert to spatial format
+industrial_sf <- st_as_sf(industrial_data, 
+                         coords = c("Long", "Lat"), 
+                         crs = 4326) %>%
+  st_transform(5070)  # Transform to analysis CRS
+
+# Aggregate by spatial units (example for HUC8)
+boundaries <- load_builtin_boundaries("huc8")
+industrial_aggregated <- wwtp_aggregate_by_boundaries(
+  industrial_sf, boundaries, "nitrogen", "huc8"
+)
+
+# Add to existing results
+# (You would modify the integration functions to include industrial sources)
+```
+
+### Working with Different Time Periods
+
+```{r time_periods, eval=FALSE}
+# Create a time series dataset
+years_to_analyze <- 2018:2022
+time_series_results <- list()
+
+for (year in years_to_analyze) {
+  # Check if you have WWTP data for this year
+  wwtp_file <- paste0("wwtp_nitrogen_", year, ".csv")
+  
+  if (file.exists(wwtp_file)) {
+    time_series_results[[as.character(year)]] <- run_builtin_analysis(
+      scale = "huc8",
+      year = year,
+      nutrients = "nitrogen",
+      include_wwtp = TRUE,
+      custom_wwtp_nitrogen = wwtp_file,
+      save_outputs = FALSE,
+      verbose = FALSE
+    )
+  } else {
+    # Agricultural only if no WWTP data
+    time_series_results[[as.character(year)]] <- run_builtin_analysis(
+      scale = "huc8", 
+      year = year,
+      nutrients = "nitrogen",
+      include_wwtp = FALSE,
+      save_outputs = FALSE,
+      verbose = FALSE
+    )
+  }
+}
+
+# Compare results across years
+yearly_summary <- do.call(rbind, lapply(names(time_series_results), function(year) {
+  result <- time_series_results[[year]]
+  classes <- table(result$agricultural$N_class)
+  
+  data.frame(
+    Year = as.numeric(year),
+    Total_Units = sum(classes),
+    Source_Units = classes["Source"] %||% 0,
+    Sink_Units = sum(classes[c("Sink_Deficit", "Sink_Fertilizer")], na.rm = TRUE),
+    Excluded_Units = classes["Excluded"] %||% 0
+  )
+}))
+
+print(yearly_summary)
+```
+
+### Custom Agricultural Data
+
+If you have agricultural data from other sources:
+
+```{r custom_agricultural, eval=FALSE}
+# Example: Custom agricultural data format
+custom_farm_data <- data.frame(
+  County_FIPS = c("39001", "39003", "39005"),
+  Manure_N_kg = c(100000, 150000, 200000),
+  Manure_P_kg = c(20000, 30000, 40000),
+  Fertilizer_N_kg = c(50000, 75000, 100000),
+  Fertilizer_P_kg = c(10000, 15000, 20000),
+  N_Fixation_kg = c(25000, 40000, 35000),
+  Crop_N_Removal_kg = c(80000, 120000, 140000),
+  Crop_P_Removal_kg = c(15000, 25000, 30000),
+  Cropland_acres = c(45000, 67000, 52000)
+)
+
+# Convert to package format
+standardized_farm_data <- data.frame(
+  ID = custom_farm_data$County_FIPS,
+  NAME = paste("County", substr(custom_farm_data$County_FIPS, 3, 5)),
+  manure_N = custom_farm_data$Manure_N_kg,
+  manure_P = custom_farm_data$Manure_P_kg,
+  fertilizer_N = custom_farm_data$Fertilizer_N_kg,
+  fertilizer_P = custom_farm_data$Fertilizer_P_kg,
+  N_fixation = custom_farm_data$N_Fixation_kg,
+  crop_removal_N = custom_farm_data$Crop_N_Removal_kg,
+  crop_removal_P = custom_farm_data$Crop_P_Removal_kg,
+  cropland = custom_farm_data$Cropland_acres
+)
+
+# Apply classifications
+custom_classified <- standardized_farm_data %>%
+  agri_classify_nitrogen(cropland_threshold = 1234, scale = "county") %>%
+  agri_classify_phosphorus(cropland_threshold = 1234, scale = "county")
+
+print(custom_classified)
+```
+
+### Data Validation and Quality Control
+
+```{r data_validation, eval=FALSE}
+# Function to validate your custom data
+validate_custom_data <- function(data, data_type = "wwtp") {
+  
+  issues <- list()
+  
+  if (data_type == "wwtp") {
+    # Check required columns
+    required_cols <- c("Facility_Name", "Lat", "Long")
+    missing_cols <- setdiff(required_cols, names(data))
+    if (length(missing_cols) > 0) {
+      issues$missing_columns <- missing_cols
+    }
+    
+    # Check coordinate ranges (for US)
+    if ("Lat" %in% names(data) && "Long" %in% names(data)) {
+      invalid_coords <- sum(data$Lat < 24 | data$Lat > 50 | 
+                           data$Long < -125 | data$Long > -66, na.rm = TRUE)
+      if (invalid_coords > 0) {
+        issues$invalid_coordinates <- invalid_coords
+      }
+    }
+    
+    # Check for negative loads
+    load_cols <- names(data)[grepl("Load|load", names(data))]
+    for (col in load_cols) {
+      if (col %in% names(data)) {
+        negative_loads <- sum(data[[col]] < 0, na.rm = TRUE)
+        if (negative_loads > 0) {
+          issues[[paste0("negative_", col)]] <- negative_loads
+        }
+      }
+    }
+  }
+  
+  if (data_type == "agricultural") {
+    # Check for negative values in nutrient data
+    nutrient_cols <- c("manure_N", "manure_P", "fertilizer_N", "fertilizer_P",
+                       "crop_removal_N", "crop_removal_P", "cropland")
+    
+    for (col in nutrient_cols) {
+      if (col %in% names(data)) {
+        negative_values <- sum(data[[col]] < 0, na.rm = TRUE)
+        if (negative_values > 0) {
+          issues[[paste0("negative_", col)]] <- negative_values
+        }
+      }
+    }
+  }
+  
+  if (length(issues) == 0) {
+    message("âœ“ Data validation passed")
+  } else {
+    message("âš  Data validation issues found:")
+    for (issue in names(issues)) {
+      message("  ", issue, ": ", issues[[issue]])
+    }
+  }
+  
+  return(issues)
+}
+
+# Use the validation function
+# validate_custom_data(your_wwtp_data, "wwtp")
+# validate_custom_data(your_farm_data, "agricultural")
+```
+
+### Exporting Results
+
+```{r export_results, eval=FALSE}
+# Export results in different formats
+export_analysis_results <- function(results, output_dir = "exports") {
+  
+  dir.create(output_dir, showWarnings = FALSE)
+  
+  # Export agricultural data as CSV
+  agri_csv <- st_drop_geometry(results$agricultural)
+  write.csv(agri_csv, file.path(output_dir, "agricultural_results.csv"), row.names = FALSE)
+  
+  # Export as shapefile (if sf package available)
+  if (requireNamespace("sf", quietly = TRUE)) {
+    st_write(results$agricultural, file.path(output_dir, "agricultural_results.shp"), 
+             delete_dsn = TRUE, quiet = TRUE)
+  }
+  
+  # Export WWTP facilities if available
+  if ("wwtp" %in% names(results)) {
+    for (nutrient in names(results$wwtp)) {
+      facility_data <- results$wwtp[[nutrient]]$facility_data
+      write.csv(facility_data, 
+                file.path(output_dir, paste0("wwtp_", nutrient, "_facilities.csv")), 
+                row.names = FALSE)
+    }
+  }
+  
+  # Export integrated results if available
+  if ("integrated" %in% names(results)) {
+    for (nutrient in names(results$integrated)) {
+      integrated_csv <- st_drop_geometry(results$integrated[[nutrient]])
+      write.csv(integrated_csv, 
+                file.path(output_dir, paste0("integrated_", nutrient, "_results.csv")), 
+                row.names = FALSE)
+    }
+  }
+  
+  message("Results exported to: ", output_dir)
+}
+
+# Use the export function
+# export_analysis_results(results_custom, "my_exports")
+```
+
+## Troubleshooting Common Issues
+
+### WWTP Data Issues
+
+```{r troubleshooting_wwtp, eval=FALSE}
+# Common WWTP data problems and solutions
+
+# Problem 1: "No valid facilities remaining after cleaning"
+# Solution: Check coordinates and load values
+wwtp_data <- read.csv("your_wwtp_file.csv")
+summary(wwtp_data)  # Look for obvious issues
+
+# Check coordinate ranges
+summary(wwtp_data$Latitude)   # Should be ~24-50 for US
+summary(wwtp_data$Longitude)  # Should be ~-125 to -66 for US
+
+# Check load values
+summary(wwtp_data$Load)  # Should be positive numbers
+
+# Problem 2: Wrong coordinate system
+# Solution: Make sure coordinates are in decimal degrees (not UTM)
+# Example conversion if needed:
+# library(sf)
+# points_utm <- st_as_sf(data, coords = c("X_UTM", "Y_UTM"), crs = 32617)
+# points_dd <- st_transform(points_utm, 4326)
+# coords_dd <- st_coordinates(points_dd)
+
+# Problem 3: Mixed units in same file
+# Solution: Standardize units before analysis
+standardize_mixed_units <- function(data, load_col, unit_col) {
+  data$standardized_load <- ifelse(
+    data[[unit_col]] == "kg", data[[load_col]],
+    ifelse(data[[unit_col]] == "lbs", data[[load_col]] / 2.20462,
+           data[[load_col]] * 907.185)  # assuming tons
+  )
+  return(data)
+}
+```
+
+### Agricultural Data Issues
+
+```{r troubleshooting_agricultural, eval=FALSE}
+# Common agricultural data problems
+
+# Problem: Impossible nutrient balances
+# Solution: Check your units and conversion factors
+check_nutrient_balance <- function(data) {
+  # Calculate simple checks
+  data$total_inputs_N <- data$manure_N + data$fertilizer_N + data$N_fixation
+  data$efficiency_N <- data$crop_removal_N / data$total_inputs_N
+  
+  # Flag suspicious values
+  suspicious <- data$efficiency_N > 2.0 | data$efficiency_N < 0.1
+  
+  if (sum(suspicious, na.rm = TRUE) > 0) {
+    message("Warning: ", sum(suspicious, na.rm = TRUE), " units have suspicious N efficiency")
+    print(data[suspicious, c("ID", "total_inputs_N", "crop_removal_N", "efficiency_N")])
+  }
+  
+  return(data)
+}
+
+# Problem: Missing spatial boundaries
+# Solution: Use built-in boundaries or provide your own
+# county_boundaries <- load_builtin_boundaries("county")
+# your_data_with_boundaries <- merge(your_data, county_boundaries, by.x = "FIPS", by.y = "FIPS")
+```
+
+## Getting Help
+
+### Common Questions
+
+**Q: What format should my WWTP data be in?**
+A: CSV file with columns for facility name, latitude, longitude, annual load, and state. The package can auto-detect most EPA formats.
+
+**Q: What units can I use for loads?**  
+A: "kg", "lbs", "pounds", or "tons". Specify with `wwtp_load_units`.
+
+**Q: Can I use data from other countries?**
+A: The spatial boundaries are US-only, but you could provide your own boundaries and modify the coordinate system.
+
+**Q: How do I handle missing data?**
+A: The package excludes facilities with missing coordinates or loads. Clean your data first for best results.
+
+**Q: My analysis is running slowly. What can I do?**
+A: Try using a smaller spatial scale (HUC2 < HUC8 < County in terms of processing time), fewer years, or clear the data cache with `clear_data_cache()`.
+
+**Q: How do I cite the package and data?**
+A: Use `citation_info()` to get proper citations for the package and underlying datasets.
+
+### Function Help
+
+```{r help, eval=FALSE}
+# Get help on specific functions
+?load_user_wwtp
+?run_builtin_analysis  
+?wwtp_clean_data
+
+# Check what data is available
+check_builtin_data()
+list_available_years()
+
+# Package health check
+health_check()
+
+# Test data download connection
+test_osf_connection()
+```
+
+### Getting More Help
+
+- Check the other vignettes: `vignette("getting-started")`, `vignette("visualization-guide")`, `vignette("advanced-features")`
+- Look at function documentation: `?function_name`
+- Check the package website or GitHub repository for examples
+- Use `quick_check()` to validate your results
+
+The `manureshed` package is designed to work with your data as easily as possible. Start with the built-in examples, then gradually add your own data as needed.nitrogen_2020.csv"
+)
+
+### Handling Different Data Formats
+
+#### Standard EPA Format
+
+Most EPA WWTP files work automatically:
+
+```{r epa_standard, eval=FALSE}
+# Standard EPA format (auto-detected)
+results <- run_builtin_analysis(
+  scale = "county",
+  year = 2018,
+  nutrients = c("nitrogen", "phosphorus"),
+  include_wwtp = TRUE,
+  custom_wwtp_nitrogen = "nitrogen_2018.csv",
+  custom_wwtp_phosphorus = "phosphorus_2018.csv"
+)
+```
+
+#### Different Units
+
+```{r different_units, eval=FALSE}
+# If your data uses pounds instead of kg
+results <- run_builtin_analysis(
+  scale = "huc8", 
+  year = 2019,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE,
+  custom_wwtp_nitrogen = "nitrogen_pounds_2019.csv",
+  wwtp_load_units = "lbs"  # Converts automatically
+)
+
+# Other units: "kg", "lbs", "pounds", "tons"
+```
+
+#### Different File Format
+
+```{r different_format, eval=FALSE}
+# If headers are in different rows
+results <- run_builtin_analysis(
+  scale = "county",
+  year = 2021, 
+  nutrients = "nitrogen",
+  include_wwtp = TRUE,
+  custom_wwtp_nitrogen = "nitrogen_2021.csv",
+  wwtp_skip_rows = 3,      # Skip first 3 rows
+  wwtp_header_row = 1      # Headers in row 1 after skipping
+)
+```
+
+#### Custom Column Names
+
+```{r custom_columns, eval=FALSE}
+# If your columns have different names
+custom_mapping <- list(
+  facility_name = "Plant_Name",
+  latitude = "Lat_DD",
+  longitude = "Long_DD", 
+  pollutant_load = "Annual_Load_kg",
+  state = "State_Code"
+)
+
+results <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2022,
+  nutrients = "nitrogen", 
+  include_wwtp = TRUE,
+  custom_wwtp_nitrogen = "custom_format.csv",
+  wwtp_column_mapping = custom_mapping
+)
+```
+
+### Manual WWTP Processing
+
+For full control, process WWTP data step by step:
+
+```{r manual_wwtp, eval=FALSE}
+# Step 1: Load your WWTP file
+wwtp_raw <- load_user_wwtp(
+  file_path = "nitrogen_2020.csv",
+  nutrient = "nitrogen",
+  load_units = "lbs"
+)
+
+# Step 2: Clean the data
+wwtp_clean <- wwtp_clean_data(wwtp_raw, "nitrogen")
+
+# Step 3: Classify facilities by size
+wwtp_classified <- wwtp_classify_sources(wwtp_clean, "nitrogen")
+
+# Step 4: Convert to spatial format
+wwtp_spatial <- wwtp_to_spatial(wwtp_classified)
+
+# Step 5: Load boundaries and aggregate by spatial units
+boundaries <- load_builtin_boundaries("huc8")
+wwtp_aggregated <- wwtp_aggregate_by_boundaries(
+  wwtp_spatial, boundaries, "nitrogen", "huc8"
+)
+
+# Step 6: Integrate with agricultural data
+agri_data <- load_builtin_nugis("huc8", 2020)
+agri_processed <- agri_classify_complete(agri_data, "huc8")
+
+integrated <- integrate_wwtp_agricultural(
+  agri_processed, wwtp_aggregated, "nitrogen", 
+  cropland_threshold = 1234, scale = "huc8"
+)
+```
+
+## Unit Conversions
+
+### Common Conversions
+
+```{r unit_conversions, eval=FALSE}
+# Convert between units
+kg_loads <- c(1000, 2000, 5000)
+tons_loads <- convert_load_units(kg_loads, "kg")
+
+lbs_loads <- c(2000, 4000, 10000)  
+tons_loads <- convert_load_units(lbs_loads, "lbs")
+
+print(data.frame(
+  Original_kg = kg_loads,
+  Converted_tons = convert_load_units(kg_loads, "kg")
+))
+```
+
+### Handling P2O5 vs P
+
+The package automatically converts P2O5 to P, but you can do it manually:
+
+```{r p2o5_conversion, eval=FALSE}
+# If you have P2O5 data, convert to P
+p2o5_values <- c(100, 200, 300)  # kg P2O5
+p_values <- p2o5_values * P2O5_TO_P  # Convert to P
+
+print(paste("P2O5 to P conversion factor:", P2O5_TO_P))
+```
+
+## Working with Different Spatial Scales
+
+### County Data (FIPS Codes)
+
+```{r county_data, eval=FALSE}
+# County analysis - make sure you have 5-digit FIPS codes
+county_results <- run_builtin_analysis(
+  scale = "county",
+  year = 2016,
+  nutrients = "nitrogen"
+)
+
+# Your county WWTP data should have state and county info
+```
+
+### HUC8 Watersheds
+
+```{r huc8_data, eval=FALSE}
+# HUC8 analysis - 8-digit watershed codes
+huc8_results <- run_builtin_analysis(
+  scale = "huc8", 
+  year = 2016,
+  nutrients = "nitrogen"
+)
+
+# Make sure HUC8 codes are 8 digits (add leading zero if needed)
+huc8_codes <- c("4110001", "4110002")  # 7 digits
+formatted_codes <- format_huc8(huc8_codes)  # Adds leading zero
+print(formatted_codes)  # "04110001", "04110002"
+```
+
+### HUC2 Regions
+
+```{r huc2_data, eval=FALSE}
+# HUC2 analysis - 2-digit regional codes
+huc2_results <- run_builtin_analysis(
+  scale = "huc2",
+  year = 2016, 
+  nutrients = "nitrogen"
+)
+```
+
+## State-Specific Analysis
+
+### Single State
+
+```{r state_analysis, eval=FALSE}
+# Analyze just one state
+iowa_results <- run_state_analysis(
+  state = "IA",
+  scale = "county",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# With custom WWTP data
+texas_results <- run_state_analysis(
+  state = "TX",
+  scale = "huc8",
+  year = 2020,
+  nutrients = "nitrogen", 
+  include_wwtp = TRUE,
+  custom_wwtp_nitrogen = "texas_wwtp_2020.csv"
+)
+```
+
+### Multiple States
+
+```{r multi_state, eval=FALSE}
+# Analyze several states
+midwest_states <- c("IA", "IL", "IN", "OH") 
+state_results <- list()
+
+for (state in midwest_states) {
+  state_results[[state]] <- run_state_analysis(
+    state = state,
+    scale = "county",
+    year = 2016,
+    nutrients = "nitrogen", 
+    include_wwtp = TRUE
+  )
+}
+```
+
+## Quality Control
+
+### Validate Your Data
+
+```{r data_validation2, eval=FALSE}
+# Check your results make sense
+quick_check(results)
+
+# Look at the classifications
+table(results$agricultural$N_class)
+
+# Check WWTP facility counts
+if ("wwtp" %in% names(results)) {
+  print(paste("WWTP facilities:", nrow(results$wwtp$nitrogen$facility_data)))
+}
+```
+
+### Common Data Issues
+
+```{r data_issues, eval=FALSE}
+# Problem: Negative nutrient values
+# Solution: Check your data source and units
+
+# Problem: All facilities excluded  
+# Solution: Check coordinate system (should be decimal degrees)
+
+# Problem: No WWTP facilities found
+# Solution: Check facility coordinates are in correct format
+
+# Problem: Classification doesn't make sense
+# Solution: Check cropland threshold and nutrient balance calculations
+```
+
+## Working with Multiple Years
+
+### Time Series Analysis
+
+```{r time_series, eval=FALSE}
+# Analyze multiple years
+years_to_analyze <- 2014:2016
+
+batch_results <- batch_analysis_years(
+  years = years_to_analyze,
+  scale = "huc8",
+  nutrients = "nitrogen", 
+  include_wwtp = TRUE
+)
+
+# With custom WWTP data for some years
+custom_wwtp_files <- list(
+  "2018" = "nitrogen_2018.csv",
+  "2019" = "nitrogen_2019.csv", 
+  "2020" = "nitrogen_2020.csv"
+)
+
+# Process each year with custom data
+custom_results <- list()
+for (year in names(custom_wwtp_files)) {
+  custom_results[[year]] <- run_builtin_analysis(
+    scale = "county",
+    year = as.numeric(year),
+    nutrients = "nitrogen",
+    include_wwtp = TRUE,
+    custom_wwtp_nitrogen = custom_wwtp_files[[year]]
+  )
+}
+```
+
+## Data Management Tips
+
+### File Organization
+
+```{r , eval=FALSE}
+# Organize your data files
+# project_folder/
+#   â”œâ”€â”€ wwtp_data/
+#   â”‚   â”œâ”€â”€ nitrogen_2018.csv
+#   â”‚   â”œâ”€â”€ nitrogen_2019.csv
+#   â”‚   â””â”€â”€ phosphorus_2018.csv
+#   â”œâ”€â”€ results/
+#   â””â”€â”€ maps/
+
+# Set working directory
+setwd("project_folder")
+
+# Run analysis with organized files
+results <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2018,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE,
+  custom_wwtp_nitrogen = "wwtp_data/nitrogen_2018.csv",
+  output_dir = "results"
+)
+```
+
+### Memory Management
+
+```{r memory_management, eval=FALSE}
+# For large datasets, clear cache periodically
+clear_data_cache()
+
+# Check package health
+health_check()
+
+# Free up memory between analyses
+rm(large_results)
+gc()
+```
+
+## Example: Complete Custom Workflow
+
+Here's a complete example using custom data:
+
+```{r complete_example, eval=FALSE}
+# 1. Prepare your WWTP file (nitrogen_2021.csv)
+# Make sure it has columns: Facility Name, Latitude, Longitude, Load (kg/yr), State
+
+# 2. Run analysis
+results_custom <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2021,  # Agricultural data extrapolated to 2021
+  nutrients = "nitrogen",
+  include_wwtp = TRUE,
+  custom_wwtp_nitrogen = "nitrogen_2021.csv",
+  wwtp_load_units = "kg"
+)
+
+# 3. Check results
+summarize_results(results_custom)
+quick_check(results_custom)
+
+# 4. Create maps
+nitrogen_map <- map_agricultural_classification(
+  results_custom$integrated$nitrogen,
+  "nitrogen", "combined_N_class",
+  "2021 Nitrogen with Custom WWTP Data"
+)
+
+save_plot(nitrogen_map, "custom_analysis_2021.png")
+
+# 5. Save results
+save_spatial_data(
+  results_custom$integrated$nitrogen,
+  "nitrogen_2021_results.rds"
+)
+```
+
+
+
+
+
+
+
+
+### Integration Issues
+
+```{r troubleshooting_integration, eval=FALSE}
+# Common integration problems
+
+# Problem: WWTP facilities not matching spatial units
+# Solution: Check coordinate systems and boundary files
+check_wwtp_spatial_match <- function(wwtp_data, boundaries) {
+  
+  # Convert WWTP to spatial
+  wwtp_sf <- st_as_sf(wwtp_data, coords = c("Long", "Lat"), crs = 4326)
+  wwtp_projected <- st_transform(wwtp_sf, st_crs(boundaries))
+  
+  # Check spatial intersection
+  intersections <- st_intersects(wwtp_projected, boundaries)
+  
+  # Count facilities per spatial unit
+  matches <- lengths(intersections)
+  
+  message("WWTP spatial matching summary:")
+  message("  Total facilities: ", nrow(wwtp_data))
+  message("  Facilities matched to boundaries: ", sum(matches > 0))
+  message("  Facilities not matched: ", sum(matches == 0))
+  
+  if (sum(matches == 0) > 0) {
+    unmatched <- wwtp_data[matches == 0, ]
+    message("  Check coordinates for unmatched facilities")
+    print(head(unmatched))
+  }
+  
+  return(matches)
+}
+
+# Problem: Scale mismatch between data sources
+# Solution: Ensure consistent spatial scales
+verify_scale_consistency <- function(agricultural_data, wwtp_data, scale) {
+  
+  message("Scale consistency check for: ", scale)
+  
+  # Check ID formats
+  if (scale == "county") {
+    # FIPS codes should be 5 digits
+    invalid_fips <- sum(nchar(agricultural_data$ID) != 5)
+    message("  Invalid FIPS codes: ", invalid_fips)
+  } else if (scale == "huc8") {
+    # HUC8 codes should be 8 digits
+    invalid_huc8 <- sum(nchar(agricultural_data$ID) != 8)
+    message("  Invalid HUC8 codes: ", invalid_huc8)
+  }
+  
+  # Check coordinate ranges
+  coord_summary <- list(
+    lat_range = range(wwtp_data$Lat, na.rm = TRUE),
+    long_range = range(wwtp_data$Long, na.rm = TRUE)
+  )
+  
+  message("  WWTP coordinate ranges:")
+  message("    Latitude: ", paste(round(coord_summary$lat_range, 2), collapse = " to "))
+  message("    Longitude: ", paste(round(coord_summary$long_range, 2), collapse = " to "))
+  
+  return(coord_summary)
+}
+```
+
+## Best Practices for Custom Data
+
+### File Organization
+
+```{r file_organization, eval=FALSE}
+# Recommended project structure
+create_project_structure <- function(project_name) {
+  
+  # Create main directories
+  dir.create(project_name, showWarnings = FALSE)
+  dir.create(file.path(project_name, "data"), showWarnings = FALSE)
+  dir.create(file.path(project_name, "data", "wwtp"), showWarnings = FALSE)
+  dir.create(file.path(project_name, "data", "agricultural"), showWarnings = FALSE)
+  dir.create(file.path(project_name, "results"), showWarnings = FALSE)
+  dir.create(file.path(project_name, "maps"), showWarnings = FALSE)
+  dir.create(file.path(project_name, "exports"), showWarnings = FALSE)
+  
+  # Create README
+  readme_content <- paste(
+    "# Manureshed Analysis Project",
+    "",
+    "## Data Files",
+    "- data/wwtp/ - WWTP facility data files",
+    "- data/agricultural/ - Custom agricultural data",
+    "",
+    "## Outputs", 
+    "- results/ - Analysis results (.rds files)",
+    "- maps/ - Generated maps (.png files)",
+    "- exports/ - Exported data (.csv, .shp files)",
+    "",
+    "## Analysis Scripts",
+    "- analysis.R - Main analysis script",
+    "",
+    sep = "\n"
+  )
+  
+  writeLines(readme_content, file.path(project_name, "README.md"))
+  
+  message("Project structure created: ", project_name)
+  message("Add your data files to the appropriate folders")
+}
+
+# Create organized project
+# create_project_structure("my_nutrient_analysis")
+```
+
+### Data Documentation
+
+```{r data_documentation, eval=FALSE}
+# Document your custom data sources
+document_data_sources <- function(wwtp_files = NULL, agricultural_files = NULL, 
+                                 output_file = "data_documentation.txt") {
+  
+  doc_content <- c(
+    "DATA SOURCES DOCUMENTATION",
+    "============================",
+    "",
+    "Analysis Date: ", as.character(Sys.Date()),
+    "Package Version: ", as.character(packageVersion("manureshed")),
+    ""
+  )
+  
+  if (!is.null(wwtp_files)) {
+    doc_content <- c(doc_content,
+      "WWTP DATA FILES:",
+      "----------------"
+    )
+    
+    for (file in wwtp_files) {
+      if (file.exists(file)) {
+        file_info <- file.info(file)
+        doc_content <- c(doc_content,
+          paste("File:", file),
+          paste("  Size:", round(file_info$size / 1024, 2), "KB"),
+          paste("  Modified:", file_info$mtime),
+          paste("  Rows:", nrow(read.csv(file))),
+          ""
+        )
+      }
+    }
+  }
+  
+  if (!is.null(agricultural_files)) {
+    doc_content <- c(doc_content,
+      "AGRICULTURAL DATA FILES:",
+      "------------------------"
+    )
+    
+    for (file in agricultural_files) {
+      if (file.exists(file)) {
+        file_info <- file.info(file)
+        doc_content <- c(doc_content,
+          paste("File:", file),
+          paste("  Size:", round(file_info$size / 1024, 2), "KB"),
+          paste("  Modified:", file_info$mtime),
+          paste("  Rows:", nrow(read.csv(file))),
+          ""
+        )
+      }
+    }
+  }
+  
+  doc_content <- c(doc_content,
+    "ANALYSIS PARAMETERS:",
+    "--------------------",
+    "Built-in data years: 1987-2016 (Agricultural), 2007-2016 (WWTP)",
+    "Spatial scales: county, huc8, huc2",
+    "Default cropland threshold: 500 ha (1,234 acres)",
+    ""
+  )
+  
+  writeLines(doc_content, output_file)
+  message("Data documentation saved to: ", output_file)
+}
+
+# Use documentation function
+# document_data_sources(
+#   wwtp_files = c("data/wwtp/nitrogen_2020.csv", "data/wwtp/phosphorus_2020.csv"),
+#   agricultural_files = c("data/agricultural/custom_farm_data.csv")
+# )
+```
+
+### Quality Assurance Workflow
+
+```{r qa_workflow, eval=FALSE}
+# Complete quality assurance workflow
+quality_assurance_workflow <- function(results, data_sources = NULL) {
+  
+  qa_report <- list()
+  qa_report$timestamp <- Sys.time()
+  qa_report$data_sources <- data_sources
+  
+  # 1. Basic data checks
+  qa_report$basic_checks <- list(
+    total_spatial_units = nrow(results$agricultural),
+    missing_classifications = sum(is.na(results$agricultural$N_class))
+  )
+  
+  # 2. Classification distribution
+  if ("N_class" %in% names(results$agricultural)) {
+    n_dist <- table(results$agricultural$N_class)
+    qa_report$classification_distribution <- list(
+      nitrogen = n_dist,
+      excluded_percentage = round(n_dist["Excluded"] / sum(n_dist) * 100, 1)
+    )
+  }
+  
+  # 3. WWTP integration checks
+  if ("wwtp" %in% names(results)) {
+    qa_report$wwtp_checks <- list()
+    
+    for (nutrient in names(results$wwtp)) {
+      facilities <- results$wwtp[[nutrient]]$facility_data
+      qa_report$wwtp_checks[[nutrient]] <- list(
+        total_facilities = nrow(facilities),
+        facilities_with_loads = sum(!is.na(facilities[[paste0(toupper(substr(nutrient, 1, 1)), "_Load_tons")]]))
+      )
+    }
+  }
+  
+  # 4. Spatial validation
+  if (inherits(results$agricultural, "sf")) {
+    qa_report$spatial_checks <- list(
+      invalid_geometries = sum(!st_is_valid(results$agricultural)),
+      crs = st_crs(results$agricultural)$input
+    )
+  }
+  
+  # 5. Range checks
+  if ("integrated" %in% names(results)) {
+    for (nutrient in names(results$integrated)) {
+      data <- results$integrated[[nutrient]]
+      surplus_col <- paste0(substr(nutrient, 1, 1), "_surplus")
+      
+      if (surplus_col %in% names(data)) {
+        qa_report$range_checks[[nutrient]] <- list(
+          min_surplus = min(data[[surplus_col]], na.rm = TRUE),
+          max_surplus = max(data[[surplus_col]], na.rm = TRUE),
+          extreme_values = sum(abs(data[[surplus_col]]) > 1000, na.rm = TRUE)
+        )
+      }
+    }
+  }
+  
+  # Generate QA summary
+  qa_summary <- list(
+    passed = TRUE,
+    warnings = character(),
+    errors = character()
+  )
+  
+  # Check for issues
+  if (qa_report$basic_checks$missing_classifications > 0) {
+    qa_summary$warnings <- c(qa_summary$warnings, 
+                             paste("Missing classifications:", qa_report$basic_checks$missing_classifications))
+  }
+  
+  if (qa_report$classification_distribution$excluded_percentage > 50) {
+    qa_summary$warnings <- c(qa_summary$warnings,
+                             paste("High exclusion rate:", qa_report$classification_distribution$excluded_percentage, "%"))
+  }
+  
+  if ("spatial_checks" %in% names(qa_report) && qa_report$spatial_checks$invalid_geometries > 0) {
+    qa_summary$errors <- c(qa_summary$errors,
+                           paste("Invalid geometries:", qa_report$spatial_checks$invalid_geometries))
+    qa_summary$passed <- FALSE
+  }
+  
+  # Print summary
+  message("Quality Assurance Summary:")
+  message("  Status: ", ifelse(qa_summary$passed, "PASSED", "FAILED"))
+  
+  if (length(qa_summary$warnings) > 0) {
+    message("  Warnings:")
+    for (warning in qa_summary$warnings) {
+      message("    - ", warning)
+    }
+  }
+  
+  if (length(qa_summary$errors) > 0) {
+    message("  Errors:")
+    for (error in qa_summary$errors) {
+      message("    - ", error)
+    }
+  }
+  
+  qa_report$summary <- qa_summary
+  return(qa_report)
+}
+
+# Run QA workflow
+# qa_results <- quality_assurance_workflow(results_custom, "Custom 2021 WWTP data")
+```
+
+## Getting Help
+
+### Common Questions
+
+**Q: What format should my WWTP data be in?**
+A: CSV file with columns for facility name, latitude, longitude, annual load, and state. The package can auto-detect most EPA formats.
+
+**Q: What units can I use for loads?**  
+A: "kg", "lbs", "pounds", or "tons". Specify with `wwtp_load_units`.
+
+**Q: Can I use data from other countries?**
+A: The spatial boundaries are US-only, but you could provide your own boundaries and modify the coordinate system.
+
+**Q: How do I handle missing data?**
+A: The package excludes facilities with missing coordinates or loads. Clean your data first for best results.
+
+**Q: My analysis is running slowly. What can I do?**
+A: Try using a smaller spatial scale (HUC2 < HUC8 < County in terms of processing time), fewer years, or clear the data cache with `clear_data_cache()`.
+
+**Q: How do I cite the package and data?**
+A: Use `citation_info()` to get proper citations for the package and underlying datasets.
+
+**Q: Can I analyze partial years or seasonal data?**
+A: The package is designed for annual data. For seasonal analysis, you would need to aggregate your data to annual totals first.
+
+**Q: What if my WWTP data has different pollutant measurements?**
+A: The package expects total nitrogen and total phosphorus loads. If you have other forms (NO3, NH4, PO4), you'll need to convert to total N and P first.
+
+### Function Help
+
+```{r , eval=FALSE}
+# Get help on specific functions
+?load_user_wwtp
+?run_builtin_analysis  
+?wwtp_clean_data
+?validate_columns
+
+# Check what data is available
+check_builtin_data()
+list_available_years()
+
+# Package health check
+health_check()
+
+# Test data download connection
+test_osf_connection()
+```
+
+### Getting More Help
+
+- Check the other vignettes: `vignette("getting-started")`, `vignette("visualization-guide")`, `vignette("advanced-features")`
+- Look at function documentation: `?function_name`
+- Check the package website or GitHub repository for examples
+- Use `quick_check()` to validate your results
+- Run `health_check()` if you encounter installation or data loading issues
+
+### Reporting Issues
+
+If you encounter bugs or have feature requests:
+
+1. Check that your data format matches the expected format
+2. Run `health_check()` to verify package installation
+3. Try with built-in data first to isolate the issue
+4. Document the error message and steps to reproduce
+5. Check the package documentation and vignettes
+6. Report issues with a minimal reproducible example
+
+The `manureshed` package is designed to work with your data as easily as possible. Start with the built-in examples, then gradually add your own data as needed. The key is to ensure your data is properly formatted and validated before running the analysis.

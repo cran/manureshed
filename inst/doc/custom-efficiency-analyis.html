@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Olatunde D. Akanbi" />
+
+<meta name="date" content="2025-12-17" />
+
+<title>Sensitivity Analysis with Custom Efficiency Factors</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Sensitivity Analysis with Custom Efficiency
+Factors</h1>
+<h4 class="author">Olatunde D. Akanbi</h4>
+<h4 class="date">2025-12-17</h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>This vignette demonstrates how to conduct sensitivity analysis using
+custom nutrient efficiency factors in the manureshed package. While
+standard analyses use established efficiency factors (0.5 for nitrogen,
+1.0 for phosphorus), users may want to explore how different efficiency
+assumptions affect classification results.</p>
+</div>
+<div id="standard-vs.-custom-efficiency-factors" class="section level2">
+<h2>Standard vs. Custom Efficiency Factors</h2>
+<p><strong>Standard Factors:</strong> - <strong>Nitrogen: 0.5
+(50%)</strong> - Reflects typical losses during nutrient cycling,
+application, and uptake - <strong>Phosphorus: 1.0 (100%)</strong> -
+Assumes full phosphorus availability</p>
+<p><strong>When to Use Custom Factors:</strong> - Evaluating improved
+management practices (higher efficiency) - Accounting for regional
+differences in application methods - Conducting uncertainty analysis -
+Testing different policy scenarios</p>
+</div>
+<div id="basic-sensitivity-analysis" class="section level2">
+<h2>Basic Sensitivity Analysis</h2>
+<div id="load-required-data" class="section level3">
+<h3>Load Required Data</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(manureshed)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co"># Load built-in data for HUC8 watersheds</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>nugis_data <span class="ot">&lt;-</span> <span class="fu">load_builtin_nugis</span>(<span class="st">&quot;huc8&quot;</span>, <span class="dv">2016</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>boundaries <span class="ot">&lt;-</span> <span class="fu">load_builtin_boundaries</span>(<span class="st">&quot;huc8&quot;</span>)</span></code></pre></div>
+</div>
+<div id="compare-different-nitrogen-efficiencies" class="section level3">
+<h3>Compare Different Nitrogen Efficiencies</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Standard analysis (50% efficiency)</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>results_standard <span class="ot">&lt;-</span> <span class="fu">agri_classify_complete_custom</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  nugis_data, </span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="at">n_efficiency =</span> <span class="fl">0.5</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">p_efficiency =</span> <span class="fl">1.0</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co"># Improved management scenario (70% efficiency)</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>results_high <span class="ot">&lt;-</span> <span class="fu">agri_classify_complete_custom</span>(</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  nugis_data,</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>, </span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="at">n_efficiency =</span> <span class="fl">0.7</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="at">p_efficiency =</span> <span class="fl">1.0</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>)</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co"># Conservative scenario (30% efficiency)</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>results_low <span class="ot">&lt;-</span> <span class="fu">agri_classify_complete_custom</span>(</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  nugis_data,</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  <span class="at">n_efficiency =</span> <span class="fl">0.3</span>,</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>  <span class="at">p_efficiency =</span> <span class="fl">1.0</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>)</span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co"># Compare nitrogen classifications</span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;Standard (50% efficiency):</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">table</span>(results_standard<span class="sc">$</span>N_class))</span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Improved Management (70% efficiency):</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">table</span>(results_high<span class="sc">$</span>N_class))</span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Conservative (30% efficiency):</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">table</span>(results_low<span class="sc">$</span>N_class))</span></code></pre></div>
+</div>
+<div id="visualize-sensitivity-results" class="section level3">
+<h3>Visualize Sensitivity Results</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Create comparison data frame</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>efficiency_scenarios <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">Efficiency =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.5</span>, <span class="fl">0.7</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">Scenario =</span> <span class="fu">c</span>(<span class="st">&quot;Conservative&quot;</span>, <span class="st">&quot;Standard&quot;</span>, <span class="st">&quot;Improved&quot;</span>),</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="at">Source =</span> <span class="fu">c</span>(</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>    <span class="fu">sum</span>(results_low<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Source&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    <span class="fu">sum</span>(results_standard<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Source&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>    <span class="fu">sum</span>(results_high<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Source&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  ),</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  <span class="at">Sink_Deficit =</span> <span class="fu">c</span>(</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>    <span class="fu">sum</span>(results_low<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Sink_Deficit&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>    <span class="fu">sum</span>(results_standard<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Sink_Deficit&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>    <span class="fu">sum</span>(results_high<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Sink_Deficit&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  )</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>)</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co"># Plot source watersheds across scenarios</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="fu">ggplot</span>(efficiency_scenarios, <span class="fu">aes</span>(<span class="at">x =</span> Efficiency, <span class="at">y =</span> Source)) <span class="sc">+</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">1.2</span>, <span class="at">color =</span> <span class="st">&quot;#2166ac&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>, <span class="at">color =</span> <span class="st">&quot;#2166ac&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Impact of Nitrogen Efficiency on Source Watersheds&quot;</span>,</span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Nitrogen Efficiency Factor&quot;</span>,</span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Number of Source Watersheds&quot;</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>, <span class="at">face =</span> <span class="st">&quot;bold&quot;</span>)</span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a>  )</span></code></pre></div>
+</div>
+</div>
+<div id="phosphorus-sensitivity-analysis" class="section level2">
+<h2>Phosphorus Sensitivity Analysis</h2>
+<p>While phosphorus typically uses 100% efficiency, you can explore
+alternative scenarios:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Standard phosphorus analysis</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>results_p_standard <span class="ot">&lt;-</span> <span class="fu">agri_classify_complete_custom</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  nugis_data,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">n_efficiency =</span> <span class="fl">0.5</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">p_efficiency =</span> <span class="fl">1.0</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co"># Reduced phosphorus availability scenario</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>results_p_reduced <span class="ot">&lt;-</span> <span class="fu">agri_classify_complete_custom</span>(</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  nugis_data,</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="at">n_efficiency =</span> <span class="fl">0.5</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>  <span class="at">p_efficiency =</span> <span class="fl">0.8</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>)</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co"># Compare phosphorus classifications</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;Standard (100% P efficiency):</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">table</span>(results_p_standard<span class="sc">$</span>P_class))</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Reduced Availability (80% P efficiency):</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">table</span>(results_p_reduced<span class="sc">$</span>P_class))</span></code></pre></div>
+</div>
+<div id="combined-sensitivity-analysis" class="section level2">
+<h2>Combined Sensitivity Analysis</h2>
+<p>Analyze both nutrients simultaneously with custom efficiencies:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Create multiple scenarios</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>scenarios <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">baseline =</span> <span class="fu">list</span>(<span class="at">n =</span> <span class="fl">0.5</span>, <span class="at">p =</span> <span class="fl">1.0</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">improved_n =</span> <span class="fu">list</span>(<span class="at">n =</span> <span class="fl">0.7</span>, <span class="at">p =</span> <span class="fl">1.0</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">reduced_p =</span> <span class="fu">list</span>(<span class="at">n =</span> <span class="fl">0.5</span>, <span class="at">p =</span> <span class="fl">0.8</span>),</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">both_modified =</span> <span class="fu">list</span>(<span class="at">n =</span> <span class="fl">0.6</span>, <span class="at">p =</span> <span class="fl">0.9</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co"># Run all scenarios</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>results_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">names</span>(scenarios), <span class="cf">function</span>(scenario_name) {</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  scenario <span class="ot">&lt;-</span> scenarios[[scenario_name]]</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  </span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">agri_classify_complete_custom</span>(</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>    nugis_data,</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>    <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>    <span class="at">n_efficiency =</span> scenario<span class="sc">$</span>n,</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>    <span class="at">p_efficiency =</span> scenario<span class="sc">$</span>p</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>  )</span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>  </span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>  <span class="co"># Return summary statistics</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>    <span class="at">Scenario =</span> scenario_name,</span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>    <span class="at">N_Efficiency =</span> scenario<span class="sc">$</span>n,</span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a>    <span class="at">P_Efficiency =</span> scenario<span class="sc">$</span>p,</span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a>    <span class="at">N_Source =</span> <span class="fu">sum</span>(results<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Source&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a>    <span class="at">P_Source =</span> <span class="fu">sum</span>(results<span class="sc">$</span>P_class <span class="sc">==</span> <span class="st">&quot;Source&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a>    <span class="at">N_Sink_Deficit =</span> <span class="fu">sum</span>(results<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Sink_Deficit&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a>    <span class="at">P_Sink_Deficit =</span> <span class="fu">sum</span>(results<span class="sc">$</span>P_class <span class="sc">==</span> <span class="st">&quot;Sink_Deficit&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a>  )</span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a>})</span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co"># Combine results</span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a>sensitivity_summary <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, results_list)</span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="fu">print</span>(sensitivity_summary)</span></code></pre></div>
+</div>
+<div id="mapping-results-across-scenarios" class="section level2">
+<h2>Mapping Results Across Scenarios</h2>
+<p>Visualize spatial differences between efficiency scenarios:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Join with spatial boundaries</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>spatial_standard <span class="ot">&lt;-</span> boundaries <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">left_join</span>(results_standard, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;huc8&quot;</span> <span class="ot">=</span> <span class="st">&quot;ID&quot;</span>))</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>spatial_high <span class="ot">&lt;-</span> boundaries <span class="sc">%&gt;%</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">left_join</span>(results_high, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;huc8&quot;</span> <span class="ot">=</span> <span class="st">&quot;ID&quot;</span>))</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co"># Create side-by-side maps</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>map_standard <span class="ot">&lt;-</span> <span class="fu">map_agricultural_classification</span>(</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  spatial_standard, </span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="st">&quot;nitrogen&quot;</span>, </span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  <span class="st">&quot;N_class&quot;</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  <span class="st">&quot;Standard Efficiency (50%)&quot;</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>)</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>map_high <span class="ot">&lt;-</span> <span class="fu">map_agricultural_classification</span>(</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>  spatial_high,</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>  <span class="st">&quot;nitrogen&quot;</span>,</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>  <span class="st">&quot;N_class&quot;</span>, </span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>  <span class="st">&quot;Improved Efficiency (70%)&quot;</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>)</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co"># Display maps (requires cowplot or similar)</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co"># cowplot::plot_grid(map_standard, map_high, ncol = 2)</span></span></code></pre></div>
+</div>
+<div id="interpreting-results" class="section level2">
+<h2>Interpreting Results</h2>
+<p><strong>Key Considerations:</strong></p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Source Watersheds:</strong> Higher efficiency factors
+typically increase the number of source watersheds as more nitrogen
+becomes “available” for redistribution</p></li>
+<li><p><strong>Sink Classification:</strong> Lower efficiencies may
+shift some “within watershed” areas to deficit status</p></li>
+<li><p><strong>Management Implications:</strong> Results inform
+decision-making about:</p>
+<ul>
+<li>Required efficiency improvements to achieve redistribution
+goals</li>
+<li>Sensitivity of regional planning to efficiency assumptions</li>
+<li>Infrastructure needs under different management scenarios</li>
+</ul></li>
+<li><p><strong>Uncertainty Quantification:</strong> Range of results
+across scenarios indicates uncertainty due to efficiency
+assumptions</p></li>
+</ol>
+</div>
+<div id="recommended-practice" class="section level2">
+<h2>Recommended Practice</h2>
+<p>For publication or policy analysis, consider:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Report standard results</strong> using established
+efficiency factors (0.5 for N, 1.0 for P)</li>
+<li><strong>Conduct sensitivity analysis</strong> with reasonable
+alternative values (e.g., Â±20%)</li>
+<li><strong>Document assumptions</strong> clearly in methodology</li>
+<li><strong>Discuss uncertainty</strong> based on sensitivity
+results</li>
+</ol>
+</div>
+<div id="example-complete-sensitivity-workflow" class="section level2">
+<h2>Example: Complete Sensitivity Workflow</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Define efficiency range for nitrogen</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>n_efficiency_values <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fl">0.3</span>, <span class="fl">0.7</span>, <span class="at">by =</span> <span class="fl">0.1</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co"># Run sensitivity analysis</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>sensitivity_results <span class="ot">&lt;-</span> <span class="fu">lapply</span>(n_efficiency_values, <span class="cf">function</span>(eff) {</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">agri_classify_complete_custom</span>(</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    nugis_data,</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>    <span class="at">n_efficiency =</span> eff,</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>    <span class="at">p_efficiency =</span> <span class="fl">1.0</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  )</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>  </span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>    <span class="at">N_Efficiency =</span> eff,</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>    <span class="at">N_Source =</span> <span class="fu">sum</span>(results<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Source&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>    <span class="at">N_Sink_Deficit =</span> <span class="fu">sum</span>(results<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Sink_Deficit&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>    <span class="at">N_Within_Watershed =</span> <span class="fu">sum</span>(results<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Within_Watershed&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  )</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>})</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co"># Combine and visualize</span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>sensitivity_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, sensitivity_results)</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co"># Create sensitivity plot</span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>sensitivity_long <span class="ot">&lt;-</span> sensitivity_df <span class="sc">%&gt;%</span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(N_Source, N_Sink_Deficit, N_Within_Watershed),</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">&quot;Classification&quot;</span>,</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;Count&quot;</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a>    <span class="at">Classification =</span> <span class="fu">gsub</span>(<span class="st">&quot;N_&quot;</span>, <span class="st">&quot;&quot;</span>, Classification),</span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a>    <span class="at">Classification =</span> <span class="fu">gsub</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot; &quot;</span>, Classification)</span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a>  )</span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="fu">ggplot</span>(sensitivity_long, <span class="fu">aes</span>(<span class="at">x =</span> N_Efficiency, <span class="at">y =</span> Count, <span class="at">color =</span> Classification)) <span class="sc">+</span></span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Nitrogen Classification Sensitivity to Efficiency Factor&quot;</span>,</span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Nitrogen Efficiency Factor&quot;</span>,</span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Number of Watersheds&quot;</span>,</span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Classification&quot;</span></span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>, <span class="at">face =</span> <span class="st">&quot;bold&quot;</span>),</span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span></span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a>  )</span></code></pre></div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>Custom efficiency factors enable: - <strong>Sensitivity
+analysis</strong> to quantify uncertainty - <strong>Scenario
+planning</strong> for different management practices<br />
+- <strong>Regional adaptation</strong> for varying agricultural systems
+- <strong>Policy evaluation</strong> under different assumptions</p>
+<p>For most applications, standard factors (N: 0.5, P: 1.0) remain
+appropriate, but sensitivity analysis provides valuable context for
+interpreting results and informing decision-making.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<ul>
+<li>Spiegal et al. (2020). Manuresheds: Advancing nutrient recycling in
+US agriculture</li>
+<li>Flynn et al. (2023). Manureshed nutrient balances at watershed
+scales</li>
+<li>Akanbi et al. (2025). Towards circular nutrient economies:
+Integrated framework</li>
+</ul>
+<p>For more information on standard manureshed methodologies, see
+<code>vignette(&quot;getting-started&quot;)</code>.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

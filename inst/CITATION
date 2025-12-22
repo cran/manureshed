@@ -1,0 +1,45 @@
+citHeader("To cite the 'manureshed' package in publications, use:")
+
+# Main package citation
+bibentry(
+  bibtype  = "Manual",
+  title    = "manureshed: An Open-Source R Package for Scalable Temporal and Multi-Region Analysis of Integrated Agricultural-Municipal Nutrient Flows",
+  author   = c(
+    person("Olatunde D.", "Akanbi"),
+    person("Vibha", "Mandayam"),
+    person("Arthava", "Gupta"),
+    person("K. C.", "Flynn"),
+    person("Jeffrey M.", "Yarus"),
+    person("Erika I.", "Barcelos"),
+    person("Roger H.", "French")
+  ),
+  year     = "2025",
+  note     = "R package version 0.1.0",
+  url      = "https://osf.io/g39xa/"
+)
+
+# Research methodology citation
+bibentry(
+  bibtype  = "Article",
+  title    = "Towards Circular Nutrient Economies: An Integrated Manureshed Framework for Agricultural and Municipal Resource Management",
+  author   = c(
+    person("Olatunde D.", "Akanbi"),
+    person("Arthava", "Gupta"),
+    person("Vibha", "Mandayam"),
+    person("K. C.", "Flynn"),
+    person("Jeffrey M.", "Yarus"),
+    person("Erika I.", "Barcelos"),
+    person("Roger H.", "French")
+  ),
+  journal  = "Resources, Conservation and Recycling",
+  year     = "2025"
+)
+
+# Optional: Data source info as a footer
+citFooter("DATA SOURCES:
+NuGIS Agricultural Data (1987-2016): NuGIS (Nutrient Use Geographic Information System), The Fertilizer Institute (TFI) and Plant Nutrition Canada (PNC), https://nugis.tfi.org/tabular_data.
+EPA WWTP Discharge Data (2007-2016): U.S. Environmental Protection Agency (EPA), DMR Loading Tool, ECHO, https://echo.epa.gov/trends/loading-tool/water-pollution-search.
+
+For questions about data usage and attribution, contact NuGIS: nugis@tfi.org, Package: olatunde.akanbi@case.edu
+")
+
