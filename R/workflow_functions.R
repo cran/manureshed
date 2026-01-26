@@ -1002,7 +1002,7 @@ create_year_comparison_plots <- function(year_summaries, nutrients, output_dir, 
 
       # Create the plot
       trend_plot <- ggplot2::ggplot(trend_df, ggplot2::aes(x = Year, y = Count, color = Classification)) +
-        ggplot2::geom_line(size = 1) +
+        ggplot2::geom_line(linewidth = 1) +
         ggplot2::geom_point(size = 2) +
         ggplot2::scale_color_manual(values = get_nutrient_colors(nutrient)) +
         ggplot2::scale_x_continuous(breaks = years) +

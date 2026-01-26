@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Using the Interactive Dashboard</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Using the Interactive Dashboard</h1>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>The manureshed interactive dashboard provides a user-friendly
+interface for exploring nutrient balance data without writing R code.
+This is ideal for:</p>
+<ul>
+<li>Policy makers and decision makers</li>
+<li>Extension agents and educators</li>
+<li>Students learning about nutrient management</li>
+<li>Quick exploratory analysis</li>
+<li>Presentations and demonstrations</li>
+</ul>
+</div>
+<div id="installation-requirements" class="section level2">
+<h2>Installation Requirements</h2>
+<p>The dashboard requires several additional packages beyond the core
+manureshed package:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Install dashboard dependencies</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>  <span class="st">&quot;shiny&quot;</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>  <span class="st">&quot;shinydashboard&quot;</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>  <span class="st">&quot;leaflet&quot;</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>  <span class="st">&quot;plotly&quot;</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  <span class="st">&quot;DT&quot;</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>))</span></code></pre></div>
+<p>These packages are <strong>optional</strong> - manureshed works fine
+without them if you only need the programmatic interface. They’re only
+needed for the interactive dashboard.</p>
+</div>
+<div id="launching-the-dashboard" class="section level2">
+<h2>Launching the Dashboard</h2>
+<p>Once the dependencies are installed, launch the dashboard with:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(manureshed)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co"># Launch the dashboard</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">launch_dashboard</span>()</span></code></pre></div>
+<p>The dashboard will open in your default web browser. By default, it
+uses a random available port. You can specify a port:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Launch on specific port</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">launch_dashboard</span>(<span class="at">port =</span> <span class="dv">3838</span>)</span></code></pre></div>
+</div>
+<div id="dashboard-interface" class="section level2">
+<h2>Dashboard Interface</h2>
+<div id="main-components" class="section level3">
+<h3>Main Components</h3>
+<p>The dashboard has four main sections:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Sidebar</strong>: Analysis parameters and controls</li>
+<li><strong>Map Tab</strong>: Interactive spatial visualization</li>
+<li><strong>Statistics Tab</strong>: Summary metrics and plots</li>
+<li><strong>Data Table Tab</strong>: Detailed results table</li>
+<li><strong>Help Tab</strong>: Documentation and information</li>
+</ol>
+</div>
+<div id="sidebar-controls" class="section level3">
+<h3>Sidebar Controls</h3>
+<div id="analysis-parameters" class="section level4">
+<h4>Analysis Parameters</h4>
+<p><strong>Spatial Scale:</strong> - County: ~3,000 units, good for
+policy analysis - HUC8 Watershed: ~2,000 units, good for watershed
+management - HUC2 Region: 18 units, good for regional overview</p>
+<p><strong>Year:</strong> - Slider from 2007-2016 - 2007-2016: WWTP data
+available - Earlier years: Agricultural data only</p>
+<p><strong>Nutrient:</strong> - Nitrogen - Phosphorus</p>
+<p><strong>Include Wastewater Treatment Plants:</strong> - Checked:
+Shows integrated agricultural + WWTP analysis - Unchecked: Shows
+agricultural-only analysis</p>
+<p><strong>Advanced Options</strong> (click “Show advanced options”): -
+Cropland Threshold: Minimum cropland area for inclusion (default: 1,234
+acres)</p>
+</div>
+<div id="action-buttons" class="section level4">
+<h4>Action Buttons</h4>
+<p><strong>Run Analysis:</strong> - Click to execute the analysis with
+selected parameters - Shows progress indicator - Displays notification
+when complete</p>
+<p><strong>Download Data:</strong> - Exports results as CSV file -
+Includes all analysis columns</p>
+</div>
+</div>
+</div>
+<div id="using-the-map-tab" class="section level2">
+<h2>Using the Map Tab</h2>
+<div id="interactive-map-features" class="section level3">
+<h3>Interactive Map Features</h3>
+<p>The map tab displays a color-coded interactive map of nutrient
+classifications:</p>
+<p><strong>Color Legend:</strong> - <strong>Red</strong>: Nutrient
+sources (surplus) - <strong>Blue</strong>: Sinks with deficit (no
+fertilizer use) - <strong>Purple</strong>: Sinks with deficit (despite
+fertilizer use) - <strong>Green</strong>: Within watershed/county
+(balanced with WWTP) - <strong>Light blue</strong>: Excluded (below
+cropland threshold)</p>
+<p><strong>Interaction:</strong> - <strong>Zoom</strong>: Scroll wheel
+or +/- buttons - <strong>Pan</strong>: Click and drag -
+<strong>Click</strong>: See detailed information popup -
+<strong>Hover</strong>: Highlight individual units</p>
+<p><strong>Popup Information:</strong> When you click a map area, you’ll
+see: - Unit ID (FIPS code, HUC8, or HUC2) - Classification -
+Surplus/deficit amount (kg) - Cropland area (acres)</p>
+</div>
+<div id="map-navigation-tips" class="section level3">
+<h3>Map Navigation Tips</h3>
+<p><strong>Finding Specific Areas:</strong> 1. Zoom in to your region of
+interest 2. Use the search function in your browser (Ctrl+F / Cmd+F) 3.
+Click on areas to identify them</p>
+<p><strong>Comparing Regions:</strong> 1. Run analysis with WWTP
+included 2. Note colors and patterns 3. Uncheck WWTP box 4. Run analysis
+again 5. Compare how classifications change</p>
+</div>
+</div>
+<div id="using-the-statistics-tab" class="section level2">
+<h2>Using the Statistics Tab</h2>
+<div id="value-boxes" class="section level3">
+<h3>Value Boxes</h3>
+<p>Four key metrics displayed at the top:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Sources</strong>: Red box - nutrient surplus areas</li>
+<li><strong>Sink (Deficit)</strong>: Blue box - deficit without
+fertilizer</li>
+<li><strong>Sink (Fertilizer)</strong>: Purple box - deficit despite
+fertilizer</li>
+<li><strong>Within Watershed/County</strong>: Green box - balanced (WWTP
+included)</li>
+<li><strong>Excluded</strong>: Light blue box - below threshold</li>
+</ol>
+</div>
+<div id="classification-distribution" class="section level3">
+<h3>Classification Distribution</h3>
+<p><strong>Pie Chart:</strong> - Shows proportions of each
+classification - Interactive: Hover to see exact counts - Click legend
+items to show/hide categories</p>
+</div>
+<div id="surplusdeficit-distribution" class="section level3">
+<h3>Surplus/Deficit Distribution</h3>
+<p><strong>Histogram:</strong> - Shows distribution of surplus
+(positive) and deficit (negative) values - Interactive: Hover to see bin
+counts - Zoom by clicking and dragging</p>
+</div>
+<div id="summary-statistics" class="section level3">
+<h3>Summary Statistics</h3>
+<p>Text output showing: - Analysis parameters used - Total units
+analyzed - Classification counts - Statistical summary of
+surplus/deficit values</p>
+</div>
+</div>
+<div id="using-the-data-table-tab" class="section level2">
+<h2>Using the Data Table Tab</h2>
+<div id="interactive-table-features" class="section level3">
+<h3>Interactive Table Features</h3>
+<p>The data table provides detailed results with:</p>
+<p><strong>Search:</strong> - Global search box (top right) -
+Column-specific search (top of each column)</p>
+<p><strong>Sorting:</strong> - Click column headers to sort - Click
+again to reverse sort - Multi-column sort: Shift+click</p>
+<p><strong>Filtering:</strong> - Use column search boxes - Type partial
+matches - Filter by multiple columns</p>
+<p><strong>Pagination:</strong> - Choose rows per page (10, 25, 50, 100)
+- Navigate between pages</p>
+</div>
+<div id="useful-filters" class="section level3">
+<h3>Useful Filters</h3>
+<p><strong>Find All Sources:</strong></p>
+<pre><code>In classification column filter: type &quot;Source&quot;</code></pre>
+<p><strong>Find High Surplus Areas:</strong></p>
+<pre><code>Sort by surplus column (descending)
+Look at top entries</code></pre>
+<p><strong>Find Specific State:</strong></p>
+<pre><code>In ID column filter (for county scale): type state FIPS code
+Example: &quot;19&quot; for Iowa</code></pre>
+</div>
+</div>
+<div id="help-tab" class="section level2">
+<h2>Help Tab</h2>
+<p>The Help tab provides: - About manureshed information - How to use
+instructions - Classification definitions - Package version - Link to
+documentation</p>
+</div>
+<div id="workflow-examples" class="section level2">
+<h2>Workflow Examples</h2>
+<div id="example-1-basic-state-analysis" class="section level3">
+<h3>Example 1: Basic State Analysis</h3>
+<p><strong>Goal:</strong> Analyze Iowa watersheds in 2016</p>
+<p><strong>Steps:</strong> 1. Launch dashboard:
+<code>launch_dashboard()</code> 2. Set Scale: HUC8 Watershed 3. Set
+Year: 2016 4. Set Nutrient: Nitrogen 5. Check: Include Wastewater
+Treatment Plants 6. Click: Run Analysis 7. Wait for completion
+notification 8. Explore results in Map tab 9. Click Download Data to
+save results</p>
+</div>
+<div id="example-2-compare-agricultural-vs.-integrated" class="section level3">
+<h3>Example 2: Compare Agricultural vs. Integrated</h3>
+<p><strong>Goal:</strong> See how WWTP changes classifications</p>
+<p><strong>Steps:</strong> 1. Set parameters (e.g., HUC8, 2016,
+Nitrogen) 2. Check: Include WWTP 3. Click: Run Analysis 4. Note the
+Statistics tab value boxes 5. Uncheck: Include WWTP 6. Observe how value
+boxes change 7. Compare the differences</p>
+<p><strong>What to Look For:</strong> - How many sources remain? - How
+many sinks become “Within Watershed”? - How does total surplus/deficit
+change?</p>
+</div>
+<div id="example-3-year-over-year-exploration" class="section level3">
+<h3>Example 3: Year-over-Year Exploration</h3>
+<p><strong>Goal:</strong> Explore temporal trends</p>
+<p><strong>Steps:</strong> 1. Set Scale: County 2. Set Nutrient:
+Nitrogen 3. Set Year: 2010 4. Check: Include WWTP 5. Run Analysis 6.
+Note key statistics 7. Change Year: 2013 8. Run Analysis again 9.
+Compare with 2010 results 10. Repeat for 2016</p>
+<p><strong>Document Your Findings:</strong> - Screenshot the Statistics
+tab for each year - Download data files for each year - Use scenario
+comparison function for formal analysis</p>
+</div>
+<div id="example-4-threshold-sensitivity" class="section level3">
+<h3>Example 4: Threshold Sensitivity</h3>
+<p><strong>Goal:</strong> See how threshold affects excluded areas</p>
+<p><strong>Steps:</strong> 1. Click: Show advanced options 2. Set
+Threshold: 500 acres 3. Run Analysis 4. Note number in “Excluded” box 5.
+Set Threshold: 1234 acres (default) 6. Run Analysis 7. Note change in
+“Excluded” 8. Set Threshold: 2000 acres 9. Run Analysis 10. Compare all
+three</p>
+</div>
+<div id="example-5-create-presentation-materials" class="section level3">
+<h3>Example 5: Create Presentation Materials</h3>
+<p><strong>Goal:</strong> Generate maps for a presentation</p>
+<p><strong>Steps:</strong> 1. Set desired parameters 2. Run Analysis 3.
+Map tab: Take screenshot (Print Screen / Cmd+Shift+4) 4. Statistics tab:
+Take screenshot of charts 5. Arrange screenshots in presentation
+software</p>
+<p><strong>Tips:</strong> - Zoom map to desired extent before screenshot
+- Use full-screen browser mode for cleaner screenshots - Consider
+running multiple scenarios</p>
+</div>
+</div>
+<div id="downloading-results" class="section level2">
+<h2>Downloading Results</h2>
+<div id="data-download" class="section level3">
+<h3>Data Download</h3>
+<p>Click “Download Data” button to export a CSV file containing:</p>
+<p><strong>Columns Include:</strong> - Unit ID (FIPS, HUC8, or HUC2) -
+Cropland area - Surplus/deficit values - Classifications - If WWTP
+included: combined classifications and surplus</p>
+<p><strong>File Name Format:</strong></p>
+<pre><code>manureshed_[scale]_[year]_[nutrient].csv</code></pre>
+<p>Example: <code>manureshed_huc8_2016_nitrogen.csv</code></p>
+</div>
+<div id="using-downloaded-data" class="section level3">
+<h3>Using Downloaded Data</h3>
+<p>Import into spreadsheet software:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># In Excel or Google Sheets:</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co"># File &gt; Import &gt; CSV</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co"># Select the downloaded file</span></span></code></pre></div>
+<p>Further analysis in R:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Read downloaded data</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;manureshed_huc8_2016_nitrogen.csv&quot;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co"># Filter to sources only</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>sources <span class="ot">&lt;-</span> data[data<span class="sc">$</span>N_class <span class="sc">==</span> <span class="st">&quot;Source&quot;</span>, ]</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co"># Calculate statistics</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">mean</span>(sources<span class="sc">$</span>N_surplus)</span></code></pre></div>
+</div>
+</div>
+<div id="performance-tips" class="section level2">
+<h2>Performance Tips</h2>
+<div id="for-faster-analysis" class="section level3">
+<h3>For Faster Analysis</h3>
+<p><strong>Choose Appropriate Scale:</strong> - HUC2: Fastest (~18
+units) - HUC8: Moderate (~2,000 units) - County: Slowest (~3,000
+units)</p>
+<p><strong>Processing Times</strong> (approximate): - County: 30-60
+seconds - HUC8: 20-40 seconds - HUC2: 5-10 seconds</p>
+<p><strong>Note:</strong> First run for a year is slower (downloads
+data), subsequent runs are faster (uses cached data).</p>
+</div>
+<div id="browser-performance" class="section level3">
+<h3>Browser Performance</h3>
+<p><strong>Recommended Browsers:</strong> - Chrome (best performance) -
+Firefox (good performance) - Safari (good on Mac) - Edge (good on
+Windows)</p>
+<p><strong>If Dashboard is Slow:</strong> - Close unused browser tabs -
+Try a different browser - Restart R session - Clear browser cache</p>
+</div>
+</div>
+<div id="troubleshooting" class="section level2">
+<h2>Troubleshooting</h2>
+<div id="dashboard-wont-launch" class="section level3">
+<h3>Dashboard Won’t Launch</h3>
+<p><strong>Error: “Package ‘shiny’ is required”</strong></p>
+<p>Solution:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;shiny&quot;</span>, <span class="st">&quot;shinydashboard&quot;</span>, <span class="st">&quot;leaflet&quot;</span>, <span class="st">&quot;plotly&quot;</span>, <span class="st">&quot;DT&quot;</span>))</span></code></pre></div>
+<p><strong>Error: “Could not find dashboard files”</strong></p>
+<p>Solution:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install</span>()  <span class="co"># Reinstall package</span></span></code></pre></div>
+</div>
+<div id="analysis-fails" class="section level3">
+<h3>Analysis Fails</h3>
+<p><strong>Error during analysis:</strong></p>
+<p>Possible causes: - Network issue (downloading data) - Invalid year
+selection - Insufficient memory</p>
+<p>Solutions: 1. Check internet connection 2. Try a different year 3.
+Use smaller scale (HUC2) 4. Restart R session</p>
+</div>
+<div id="map-not-displaying" class="section level3">
+<h3>Map Not Displaying</h3>
+<p><strong>Map shows base layer only, no colored regions:</strong></p>
+<p>Possible causes: - Analysis not run yet - Analysis failed
+silently</p>
+<p>Solutions: 1. Click “Run Analysis” again 2. Check browser console
+(F12) for errors 3. Try different parameters</p>
+</div>
+<div id="value-boxes-show-zero" class="section level3">
+<h3>Value Boxes Show Zero</h3>
+<p><strong>Green box shows 0:</strong></p>
+<p>This is normal when: - Agricultural-only analysis (no “Within
+Watershed” category) - Area genuinely has no balanced units</p>
+<p>To see non-zero values: - Check “Include WWTP” - Run Analysis</p>
+</div>
+</div>
+<div id="comparison-with-programmatic-interface" class="section level2">
+<h2>Comparison with Programmatic Interface</h2>
+<div id="when-to-use-dashboard" class="section level3">
+<h3>When to Use Dashboard</h3>
+<p><strong>Dashboard is better for:</strong> - Quick exploration -
+Demonstrations - Non-R users - Visual presentations - Teaching</p>
+</div>
+<div id="when-to-use-r-code" class="section level3">
+<h3>When to Use R Code</h3>
+<p><strong>R code is better for:</strong> - Batch processing multiple
+years - Custom analyses - Reproducible research - Integration with other
+analyses - Automated workflows</p>
+</div>
+<div id="hybrid-approach" class="section level3">
+<h3>Hybrid Approach</h3>
+<p>Use both together:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># 1. Explore with dashboard</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">launch_dashboard</span>()</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co"># Identify interesting patterns</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co"># 2. Reproduce in code for publication</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2016</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>)</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co"># 3. Do advanced analysis</span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">compare_scenarios</span>(...)</span></code></pre></div>
+</div>
+</div>
+<div id="sharing-results" class="section level2">
+<h2>Sharing Results</h2>
+<div id="for-colleagues-without-r" class="section level3">
+<h3>For Colleagues Without R</h3>
+<ol style="list-style-type: decimal">
+<li>Take screenshots of dashboard</li>
+<li>Download data CSV files</li>
+<li>Email files with brief explanation</li>
+</ol>
+</div>
+<div id="for-r-users" class="section level3">
+<h3>For R Users</h3>
+<p>Share the code instead:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Colleagues can reproduce with:</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">library</span>(manureshed)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2016</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="for-presentations" class="section level3">
+<h3>For Presentations</h3>
+<ol style="list-style-type: decimal">
+<li>Use dashboard in presentation mode</li>
+<li>Navigate to pre-analyzed results</li>
+<li>Use zoom to highlight areas of interest</li>
+<li>Switch between tabs to show different views</li>
+</ol>
+</div>
+</div>
+<div id="accessibility-features" class="section level2">
+<h2>Accessibility Features</h2>
+<p>The dashboard includes: - Keyboard navigation support - Screen reader
+compatibility - High contrast color schemes - Resizable text -
+Alternative text for graphics</p>
+</div>
+<div id="privacy-and-security" class="section level2">
+<h2>Privacy and Security</h2>
+<p><strong>Data Privacy:</strong> - All analysis runs locally on your
+computer - No data sent to external servers - Downloads are saved to
+your local machine</p>
+<p><strong>Security:</strong> - Dashboard runs on localhost (your
+computer only) - Not accessible from internet - No authentication
+required (local use only)</p>
+</div>
+<div id="advanced-deploying-for-teams" class="section level2">
+<h2>Advanced: Deploying for Teams</h2>
+<p>If you want to share the dashboard with your team:</p>
+<div id="option-1-shinyapps.io" class="section level3">
+<h3>Option 1: Shinyapps.io</h3>
+<p>Deploy to cloud hosting:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">library</span>(rsconnect)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="co"># Configure account (one time)</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="fu">setAccountInfo</span>(<span class="at">name=</span><span class="st">&quot;your-account&quot;</span>, <span class="at">token=</span><span class="st">&quot;...&quot;</span>, <span class="at">secret=</span><span class="st">&quot;...&quot;</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co"># Deploy</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="fu">deployApp</span>(</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>  <span class="at">appDir =</span> <span class="fu">system.file</span>(<span class="st">&quot;shiny&quot;</span>, <span class="st">&quot;dashboard&quot;</span>, <span class="at">package =</span> <span class="st">&quot;manureshed&quot;</span>),</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>  <span class="at">appName =</span> <span class="st">&quot;manureshed-dashboard&quot;</span></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="option-2-rstudio-connect" class="section level3">
+<h3>Option 2: RStudio Connect</h3>
+<p>Deploy to institutional server:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># Follow RStudio Connect deployment guide</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="co"># Requires RStudio Connect server</span></span></code></pre></div>
+</div>
+<div id="option-3-shiny-server" class="section level3">
+<h3>Option 3: Shiny Server</h3>
+<p>Install on shared server: - Requires system administration access -
+Best for long-term team use - See Shiny Server documentation</p>
+</div>
+</div>
+<div id="getting-help" class="section level2">
+<h2>Getting Help</h2>
+<p><strong>Within Dashboard:</strong> - Click “Help” tab for basic
+information</p>
+<p><strong>Package Documentation:</strong></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>?launch_dashboard</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>?run_builtin_analysis</span></code></pre></div>
+<p><strong>Online Resources:</strong> - Package website - GitHub
+repository - Vignettes: <code>browseVignettes(&quot;manureshed&quot;)</code></p>
+<p><strong>Report Issues:</strong> - Use GitHub issues for bug reports -
+Include error messages and screenshots - Describe steps to reproduce</p>
+</div>
+<div id="related-vignettes" class="section level2">
+<h2>Related Vignettes</h2>
+<ul>
+<li><code>vignette(&quot;getting-started&quot;)</code> - Basic package usage</li>
+<li><code>vignette(&quot;scenario-comparison&quot;)</code> - Compare multiple
+scenarios</li>
+<li><code>vignette(&quot;advanced-features&quot;)</code> - Advanced analysis
+techniques</li>
+<li><code>vignette(&quot;data-integration&quot;)</code> - Using custom data</li>
+</ul>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>The manureshed interactive dashboard provides:</p>
+<p><strong>Pros:</strong> - No R coding required - Visual and intuitive
+- Great for exploration - Easy to demonstrate - Interactive maps and
+plots</p>
+<p><strong>Cons:</strong> - Requires additional packages - Limited to
+one analysis at a time - Not suitable for batch processing - Less
+flexible than coding</p>
+<p><strong>Best For:</strong> - Initial data exploration - Presentations
+and teaching - Non-programmer collaborators - Quick “what if” scenarios
+- Visual communication</p>
+<p>For reproducible research and complex workflows, use the programmatic
+interface alongside the dashboard.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

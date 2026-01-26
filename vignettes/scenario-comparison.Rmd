@@ -1,0 +1,532 @@
+---
+title: "Scenario Comparison Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Scenario Comparison Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 10,
+  fig.height = 6
+)
+```
+
+## Overview
+
+The `compare_scenarios()` function allows you to compare multiple analysis scenarios side-by-side. This is useful for:
+
+- Comparing agricultural-only vs. WWTP-integrated analyses
+- Testing different cropland thresholds
+- Evaluating management scenarios
+- Year-over-year comparisons
+- Scale comparisons
+
+## Basic Usage
+
+### Simple Comparison: Agricultural vs. WWTP
+
+The most common use case is comparing agricultural nutrient balances with and without wastewater treatment plant data.
+
+```{r basic_comparison, eval=FALSE}
+library(manureshed)
+
+# Run analysis without WWTP
+base_scenario <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = FALSE
+)
+
+# Run analysis with WWTP
+wwtp_scenario <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# Compare the two scenarios
+comparison <- compare_scenarios(list(
+  "Agricultural Only" = base_scenario,
+  "Agricultural + WWTP" = wwtp_scenario
+))
+```
+
+## Understanding the Results
+
+The comparison returns three main components:
+
+### 1. Comparison Data
+
+A data frame with metrics for each scenario:
+
+```{r view_data, eval=FALSE}
+# View the comparison data
+print(comparison$comparison_data)
+```
+
+Key metrics include:
+- `n_sources`: Number of nutrient source areas
+- `n_sinks`: Number of nutrient sink areas
+- `n_balanced` / `n_within_watershed`: Balanced areas
+- `n_excluded`: Excluded areas (below cropland threshold)
+- `total_surplus_kg`: Total nutrient surplus
+- `total_deficit_kg`: Total nutrient deficit
+
+### 2. Summary Statistics
+
+Statistical comparison showing differences between scenarios:
+
+```{r view_summary, eval=FALSE}
+# View summary
+print(comparison$summary)
+
+# See specific differences
+print(comparison$summary$differences)
+```
+
+The summary shows:
+- Base scenario name
+- Delta (change) in key metrics
+- Percent change from base scenario
+
+### 3. Visualization Plots
+
+Three plots are automatically generated:
+
+```{r view_plots, eval=FALSE}
+# Bar chart comparing classification counts
+comparison$plots$bar_chart
+
+# Surplus/deficit comparison
+comparison$plots$surplus_deficit
+
+# Percent change from base scenario
+comparison$plots$percent_change
+```
+
+## Advanced Examples
+
+### Multiple Scenarios
+
+Compare more than two scenarios:
+
+```{r multiple_scenarios, eval=FALSE}
+# Create three different scenarios
+conservative <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = FALSE,
+  cropland_threshold = 2000  # More restrictive
+)
+
+moderate <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE,
+  cropland_threshold = 1234  # Default
+)
+
+liberal <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE,
+  cropland_threshold = 500   # Less restrictive
+)
+
+# Compare all three
+multi_comparison <- compare_scenarios(list(
+  "Conservative (No WWTP, High Threshold)" = conservative,
+  "Moderate (WWTP, Default Threshold)" = moderate,
+  "Liberal (WWTP, Low Threshold)" = liberal
+))
+
+# View results
+print(multi_comparison$comparison_data)
+multi_comparison$plots$bar_chart
+```
+
+### Year-over-Year Comparison
+
+Compare the same parameters across different years:
+
+```{r temporal_comparison, eval=FALSE}
+# Analyze multiple years
+year_2010 <- run_builtin_analysis(
+  scale = "county",
+  year = 2010,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+year_2013 <- run_builtin_analysis(
+  scale = "county",
+  year = 2013,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+year_2016 <- run_builtin_analysis(
+  scale = "county",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# Compare temporal trends
+temporal <- compare_scenarios(list(
+  "2010" = year_2010,
+  "2013" = year_2013,
+  "2016" = year_2016
+))
+
+# See how classifications changed over time
+temporal$plots$bar_chart
+temporal$plots$percent_change
+```
+
+### Scale Comparison
+
+Compare the same year at different spatial scales:
+
+```{r scale_comparison, eval=FALSE}
+county_scale <- run_builtin_analysis(
+  scale = "county",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+huc8_scale <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+huc2_scale <- run_builtin_analysis(
+  scale = "huc2",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# Compare scales
+scale_comp <- compare_scenarios(list(
+  "County (n=~3000)" = county_scale,
+  "HUC8 (n=~2000)" = huc8_scale,
+  "HUC2 (n=18)" = huc2_scale
+))
+
+print(scale_comp$comparison_data)
+```
+
+## Saving Results
+
+### Save Plots
+
+Save comparison plots to files:
+
+```{r save_plots, eval=FALSE}
+# Create output directory
+output_dir <- "scenario_comparison_results"
+dir.create(output_dir, showWarnings = FALSE)
+
+# Save all plots
+save_plot(
+  comparison$plots$bar_chart,
+  file.path(output_dir, "classification_comparison.png"),
+  width = 12, height = 8
+)
+
+save_plot(
+  comparison$plots$surplus_deficit,
+  file.path(output_dir, "surplus_deficit_comparison.png"),
+  width = 12, height = 8
+)
+
+save_plot(
+  comparison$plots$percent_change,
+  file.path(output_dir, "percent_change.png"),
+  width = 12, height = 8
+)
+```
+
+### Save Data
+
+Export comparison data to CSV:
+
+```{r save_data, eval=FALSE}
+# Save comparison data
+write.csv(
+  comparison$comparison_data,
+  file.path(output_dir, "scenario_comparison_data.csv"),
+  row.names = FALSE
+)
+
+# Save summary statistics
+write.csv(
+  comparison$summary$differences,
+  file.path(output_dir, "scenario_differences.csv"),
+  row.names = FALSE
+)
+```
+
+### Auto-save During Comparison
+
+Have plots automatically saved:
+
+```{r auto_save, eval=FALSE}
+# Comparison with automatic plot saving
+comparison <- compare_scenarios(
+  scenario_list = list(
+    "Base" = base_scenario,
+    "WWTP" = wwtp_scenario
+  ),
+  create_plots = TRUE,
+  output_dir = "my_comparison_results"  # Plots saved here
+)
+```
+
+## Interpreting Results
+
+### Understanding Deltas
+
+Positive vs. negative changes:
+
+```{r interpret_deltas, eval=FALSE}
+# Extract differences
+diffs <- comparison$summary$differences
+
+# Interpret changes
+if (diffs$delta_sources > 0) {
+  cat("Adding WWTP increased sources by", diffs$delta_sources, "units\n")
+} else if (diffs$delta_sources < 0) {
+  cat("Adding WWTP decreased sources by", abs(diffs$delta_sources), "units\n")
+}
+
+# Percent change
+cat("This represents a", round(diffs$pct_change_sources, 1), "% change\n")
+```
+
+### Key Metrics to Watch
+
+**Classification Changes:**
+- `delta_sources`: Change in nutrient source areas
+- `delta_sinks`: Change in nutrient sink areas
+
+**Magnitude Changes:**
+- `delta_surplus`: Change in total surplus (kg)
+- `delta_deficit`: Change in total deficit (kg)
+
+**Negative values** mean the second scenario has fewer/less than the base scenario.
+
+## Use Cases
+
+### Management Analysis
+
+Evaluate the impact of adding WWTP nutrient recovery:
+
+```{r management_example, eval=FALSE}
+# Current state (no WWTP recovery)
+current <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = FALSE
+)
+
+# With WWTP recovery management
+with_policy <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# Compare
+policy_impact <- compare_scenarios(list(
+  "Current (No WWTP)" = current,
+  "With WWTP Recovery" = with_policy
+))
+
+# Key question: How many sink areas could benefit?
+sinks_helped <- policy_impact$summary$differences$delta_sinks
+cat("WWTP recovery could help", abs(sinks_helped), "deficit areas\n")
+```
+
+### Sensitivity Analysis
+
+Test sensitivity to cropland threshold:
+
+```{r sensitivity_example, eval=FALSE}
+thresholds <- c(500, 1000, 1234, 1500, 2000)
+results <- list()
+
+for (thresh in thresholds) {
+  results[[paste0("Threshold_", thresh)]] <- run_builtin_analysis(
+    scale = "huc8",
+    year = 2016,
+    nutrients = "nitrogen",
+    include_wwtp = TRUE,
+    cropland_threshold = thresh
+  )
+}
+
+# Compare all thresholds
+sensitivity <- compare_scenarios(results)
+
+# See how excluded areas change
+excluded_counts <- sensitivity$comparison_data$n_excluded
+names(excluded_counts) <- names(results)
+print(excluded_counts)
+```
+
+### Regional Comparison
+
+Compare different states or regions:
+
+```{r regional_example, eval=FALSE}
+# Iowa
+iowa <- run_state_analysis(
+  state = "IA",
+  scale = "county",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# Nebraska
+nebraska <- run_state_analysis(
+  state = "NE",
+  scale = "county",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# Compare states
+state_comp <- compare_scenarios(list(
+  "Iowa" = iowa,
+  "Nebraska" = nebraska
+))
+
+state_comp$plots$bar_chart
+```
+
+## Tips and Best Practices
+
+### 1. Keep Comparisons Meaningful
+
+Compare scenarios that differ in **one key aspect** for clearest interpretation:
+
+```{r meaningful_comparison, eval=FALSE}
+# GOOD: Only WWTP inclusion changes
+compare_scenarios(list(
+  "No WWTP" = run_builtin_analysis(year=2016, include_wwtp=FALSE),
+  "With WWTP" = run_builtin_analysis(year=2016, include_wwtp=TRUE)
+))
+
+# LESS CLEAR: Multiple things change at once
+compare_scenarios(list(
+  "Base" = run_builtin_analysis(year=2016, scale="county", include_wwtp=FALSE),
+  "Alternative" = run_builtin_analysis(year=2015, scale="huc8", include_wwtp=TRUE)
+))
+```
+
+### 2. Name Scenarios Clearly
+
+Use descriptive names that explain what differs:
+
+```{r naming, eval=FALSE}
+# GOOD names
+compare_scenarios(list(
+  "2016 Agricultural Only" = scenario1,
+  "2016 Agricultural + WWTP" = scenario2
+))
+
+# Less clear names
+compare_scenarios(list(
+  "Scenario 1" = scenario1,
+  "Scenario 2" = scenario2
+))
+```
+
+### 3. Document Your Analysis
+
+Save parameters with results:
+
+```{r document, eval=FALSE}
+# Create a metadata file
+metadata <- data.frame(
+  scenario = c("Base", "WWTP"),
+  year = c(2016, 2016),
+  scale = c("huc8", "huc8"),
+  include_wwtp = c(FALSE, TRUE),
+  cropland_threshold = c(1234, 1234)
+)
+
+write.csv(metadata, "scenario_metadata.csv", row.names = FALSE)
+```
+
+### 4. Consider Statistical Significance
+
+For year-over-year comparisons, consider whether changes are meaningful:
+
+```{r significance, eval=FALSE}
+# Small changes might not be meaningful
+diffs <- comparison$summary$differences
+
+if (abs(diffs$pct_change_sources) < 5) {
+  cat("Change is less than 5% - may not be substantial\n")
+}
+```
+
+## Troubleshooting
+
+### Different Scales
+
+If comparing scenarios with different scales, metrics won't be directly comparable:
+
+```{r troubleshooting, eval=FALSE}
+# This comparison has limited value
+compare_scenarios(list(
+  "County" = county_results,  # ~3000 units
+  "HUC2" = huc2_results       # ~18 units
+))
+
+# Better: Compare percentages instead
+# Use the comparison data to calculate percentages yourself
+```
+
+### Missing Data
+
+If scenarios have different nutrients:
+
+```{r missing_nutrients, eval=FALSE}
+# One has nitrogen, other has phosphorus - won't compare well
+# Make sure both scenarios analyze the same nutrient
+```
+
+## Related Functions
+
+- `run_builtin_analysis()`: Run individual scenarios
+- `batch_analysis_years()`: Analyze multiple years
+- `run_state_analysis()`: State-specific analysis
+- `save_plot()`: Save comparison plots
+- `quick_summary()`: Quick validation of results
+
+## See Also
+
+- `vignette("getting-started")` - Basic package usage
+- `vignette("dashboard-guide")` - Interactive dashboard
+- `vignette("advanced-features")` - Advanced analysis techniques

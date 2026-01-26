@@ -2,7 +2,7 @@ Package: manureshed
 Type: Package
 Title: Spatiotemporal Nutrient Balance Analysis Across Agricultural and
         Municipal Systems
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Olatunde D.", "Akanbi", , "olatunde.akanbi@case.edu", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-7719-2619")),
@@ -46,7 +46,8 @@ Description: A comprehensive framework for analyzing agricultural nutrient
     award 2133576. We thank Dr. Robert D. Sabo (U.S. Environmental Protection Agency) 
     for his valuable contributions to the conceptual development and review of this work.
 License: MIT + file LICENSE
-URL: https://osf.io/g39xa/
+URL: https://osf.io/g39xa/, https://github.com/cwru-sdle/manureshed,
+        https://exelegch.github.io/manureshed-docs/
 Encoding: UTF-8
 RoxygenNote: 7.3.3
 Depends: R (>= 4.0.0)
@@ -56,12 +57,14 @@ Imports: dplyr (>= 1.0.0), sf (>= 1.0.0), ggplot2 (>= 3.3.0), tidyr (>=
         tools
 Suggests: nhdplusTools (>= 0.5.0), RColorBrewer (>= 1.1.0), cowplot (>=
         1.1.0), ggpubr (>= 0.4.0), viridis (>= 0.6.0), testthat (>=
-        3.0.0), knitr, progress, rmarkdown
+        3.0.0), knitr, ragg, progress, rmarkdown, shiny (>= 1.7.0),
+        shinydashboard (>= 0.7.0), leaflet (>= 2.0.0), plotly (>=
+        4.9.0), DT (>= 0.18)
 SystemRequirements: GDAL (>= 2.0.1), GEOS (>= 3.4.0), PROJ (>= 4.8.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2025-12-17 18:15:16 UTC; oda10
+Packaged: 2026-01-26 11:08:10 UTC; oda10
 Author: Olatunde D. Akanbi [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0001-7719-2619>),
   Vibha Mandayam [aut] (ORCID: <https://orcid.org/0009-0008-8628-9904>),
@@ -73,4 +76,4 @@ Author: Olatunde D. Akanbi [aut, cre, cph] (ORCID:
   Roger H. French [aut, cph] (ORCID:
     <https://orcid.org/0000-0002-6162-0532>)
 Repository: CRAN
-Date/Publication: 2025-12-22 18:10:02 UTC
+Date/Publication: 2026-01-26 11:40:02 UTC

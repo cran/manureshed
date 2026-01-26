@@ -205,9 +205,15 @@ save_plot <- function(plot, file_path, width = 11, height = 6, dpi = 300,
 
   # Set device-specific parameters
   extra_params <- list()
+
+  # Only set cairo if ragg is not available
   if (device %in% c("png", "jpeg", "tiff")) {
-    extra_params$type = "cairo"  # Better quality for raster formats
+    if (!requireNamespace("ragg", quietly = TRUE)) {
+      extra_params$type = "cairo"  # Use cairo if ragg not available
+    }
+    # If ragg is available, let ggsave use it as default (no type parameter needed)
   }
+
   if (device == "pdf") {
     extra_params$useDingbats = FALSE  # Better compatibility
   }

@@ -266,6 +266,8 @@ The package generates comprehensive outputs for each nutrient analyzed:
 Useful links:
 \itemize{
   \item \url{https://osf.io/g39xa/}
+  \item \url{https://github.com/cwru-sdle/manureshed}
+  \item \url{https://exelegch.github.io/manureshed-docs/}
 }
 
 }

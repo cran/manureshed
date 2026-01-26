@@ -195,3 +195,373 @@ plot_absolute_changes <- function(data, title) {
 
   return(plot)
 }
+
+
+
+#' Compare Multiple Analysis Scenarios
+#'
+#' Compare results from multiple analysis runs side-by-side with visualizations
+#' and summary statistics.
+#'
+#' @param scenario_list Named list of analysis results from run_builtin_analysis()
+#' @param metrics Character vector of metrics to compare. Options: "sources",
+#'   "sinks", "balanced", "excluded", "total_surplus", "total_deficit"
+#' @param create_plots Logical. Create comparison plots? (default: TRUE)
+#' @param output_dir Character. Directory for saving plots (default: NULL, no save)
+#'
+#' @return List containing:
+#'   \item{comparison_data}{Data frame with metrics for each scenario}
+#'   \item{plots}{List of ggplot objects (if create_plots = TRUE)}
+#'   \item{summary}{Summary statistics}
+#'
+#' @export
+#' @examples
+#' \donttest{
+#' # Create multiple scenarios
+#' base <- run_builtin_analysis(year = 2016, include_wwtp = FALSE,
+#'                               scale = "county", nutrients = "nitrogen")
+#' wwtp <- run_builtin_analysis(year = 2016, include_wwtp = TRUE,
+#'                               scale = "county", nutrients = "nitrogen")
+#'
+#' # Compare scenarios
+#' comparison <- compare_scenarios(list(
+#'   "Base (Agricultural Only)" = base,
+#'   "With WWTP" = wwtp
+#' ))
+#'
+#' # View comparison data
+#' print(comparison$comparison_data)
+#'
+#' # View plots
+#' print(comparison$plots$bar_chart)
+#' }
+compare_scenarios <- function(scenario_list,
+                              metrics = c("sources", "sinks", "balanced", "excluded"),
+                              create_plots = TRUE,
+                              output_dir = NULL) {
+
+  # Validate inputs
+  if (!is.list(scenario_list) || length(scenario_list) < 2) {
+    stop("scenario_list must be a named list with at least 2 scenarios", call. = FALSE)
+  }
+
+  if (is.null(names(scenario_list))) {
+    names(scenario_list) <- paste("Scenario", seq_along(scenario_list))
+  }
+
+  # Extract metrics from each scenario
+  comparison_data <- data.frame()
+
+  for (scenario_name in names(scenario_list)) {
+    result <- scenario_list[[scenario_name]]
+
+    # Extract metrics
+    scenario_metrics <- extract_scenario_metrics(result)
+    scenario_metrics$scenario <- scenario_name
+
+    comparison_data <- rbind(comparison_data, scenario_metrics)
+  }
+
+  # Create summary
+  summary_stats <- create_comparison_summary(comparison_data, metrics)
+
+  # Create plots if requested
+  plots <- NULL
+  if (create_plots) {
+    plots <- create_comparison_plots(comparison_data, metrics)
+
+    # Save plots if output directory provided
+    if (!is.null(output_dir)) {
+      if (!dir.exists(output_dir)) {
+        dir.create(output_dir, recursive = TRUE)
+      }
+
+      for (plot_name in names(plots)) {
+        plot_file <- file.path(output_dir, paste0("comparison_", plot_name, ".png"))
+        save_plot(plots[[plot_name]], plot_file, width = 12, height = 8)
+      }
+    }
+  }
+
+  # Return results
+  result_list <- list(
+    comparison_data = comparison_data,
+    summary = summary_stats,
+    plots = plots
+  )
+
+  # Print summary
+
+  message("Number of scenarios:", length(scenario_list), "\n")
+
+  for (name in names(scenario_list)) {
+    message("  -", name, "\n")
+  }
+  message("\nKey differences:\n")
+  print(summary_stats$differences)
+
+
+  return(result_list)
+}
+
+
+#' Extract Metrics from Analysis Results
+#'
+#' Internal function to extract comparison metrics from a single analysis result
+#'
+#' @param result Analysis result from run_builtin_analysis()
+#' @return Data frame with metrics
+#' @keywords internal
+extract_scenario_metrics <- function(result) {
+
+  # Check if WWTP is included - if so, use integrated data for primary metrics
+  has_wwtp <- "integrated" %in% names(result)
+
+  if (has_wwtp && "nitrogen" %in% names(result$integrated)) {
+    # Use combined data as primary metrics
+    primary_data <- result$integrated$nitrogen
+    n_sources <- sum(primary_data$combined_N_class == "Source", na.rm = TRUE)
+    n_sinks <- sum(primary_data$combined_N_class %in% c("Sink_Deficit", "Sink_Fertilizer"), na.rm = TRUE)
+    n_balanced <- sum(primary_data$combined_N_class == "Balanced", na.rm = TRUE)
+    n_excluded <- sum(primary_data$combined_N_class == "Excluded", na.rm = TRUE)
+    total_surplus <- sum(primary_data$combined_N_surplus[primary_data$combined_N_class == "Source"], na.rm = TRUE)
+    total_deficit <- abs(sum(primary_data$combined_N_surplus[primary_data$combined_N_class %in%
+                                                               c("Sink_Deficit", "Sink_Fertilizer")], na.rm = TRUE))
+  } else {
+    # Use agricultural data as primary metrics
+    ag_data <- result$agricultural
+    n_sources <- sum(ag_data$N_class == "Source", na.rm = TRUE)
+    n_sinks <- sum(ag_data$N_class %in% c("Sink_Deficit", "Sink_Fertilizer"), na.rm = TRUE)
+    n_balanced <- sum(ag_data$N_class == "Balanced", na.rm = TRUE)
+    n_excluded <- sum(ag_data$N_class == "Excluded", na.rm = TRUE)
+    total_surplus <- sum(ag_data$N_surplus[ag_data$N_class == "Source"], na.rm = TRUE)
+    total_deficit <- abs(sum(ag_data$N_surplus[ag_data$N_class %in%
+                                                 c("Sink_Deficit", "Sink_Fertilizer")], na.rm = TRUE))
+  }
+
+  # Keep agricultural data separate for reference
+  ag_data <- result$agricultural
+
+  # Store agricultural-only metrics for reference
+  n_sources_ag <- sum(ag_data$N_class == "Source", na.rm = TRUE)
+  n_sinks_ag <- sum(ag_data$N_class %in% c("Sink_Deficit", "Sink_Fertilizer"), na.rm = TRUE)
+  n_balanced_ag <- sum(ag_data$N_class == "Balanced", na.rm = TRUE)
+  total_surplus_ag <- sum(ag_data$N_surplus[ag_data$N_class == "Source"], na.rm = TRUE)
+  total_deficit_ag <- abs(sum(ag_data$N_surplus[ag_data$N_class %in%
+                                                  c("Sink_Deficit", "Sink_Fertilizer")], na.rm = TRUE))
+
+  if (has_wwtp && "nitrogen" %in% names(result$integrated)) {
+    int_data <- result$integrated$nitrogen
+
+    n_sources_combined <- sum(int_data$combined_N_class == "Source", na.rm = TRUE)
+    n_sinks_combined <- sum(int_data$combined_N_class %in%
+                              c("Sink_Deficit", "Sink_Fertilizer"), na.rm = TRUE)
+    n_balanced_combined <- sum(int_data$combined_N_class == "Balanced", na.rm = TRUE)
+
+    total_surplus_combined <- sum(int_data$combined_N_surplus[
+      int_data$combined_N_class == "Source"], na.rm = TRUE)
+    total_deficit_combined <- abs(sum(int_data$combined_N_surplus[
+      int_data$combined_N_class %in% c("Sink_Deficit", "Sink_Fertilizer")], na.rm = TRUE))
+  } else {
+    n_sources_combined <- NA
+    n_sinks_combined <- NA
+    n_balanced_combined <- NA
+    total_surplus_combined <- NA
+    total_deficit_combined <- NA
+  }
+
+  # Create metrics data frame
+  # Create metrics data frame
+  metrics <- data.frame(
+    n_sources = n_sources,
+    n_sinks = n_sinks,
+    n_balanced = n_balanced,
+    n_excluded = n_excluded,
+    total_surplus_kg = total_surplus,
+    total_deficit_kg = total_deficit,
+    n_sources_ag = n_sources_ag,          # ADD
+    n_sinks_ag = n_sinks_ag,              # ADD
+    total_surplus_ag_kg = total_surplus_ag,  # ADD
+    total_deficit_ag_kg = total_deficit_ag,  # ADD
+    has_wwtp = has_wwtp,
+    total_units = nrow(ag_data),
+    scale = result$parameters$scale,
+    year = result$parameters$year,
+    stringsAsFactors = FALSE
+  )
+
+  return(metrics)
+}
+
+
+#' Create Comparison Summary Statistics
+#'
+#' @param comparison_data Data frame with scenario metrics
+#' @param metrics Character vector of metrics to summarize
+#' @return List with summary statistics
+#' @keywords internal
+create_comparison_summary <- function(comparison_data, metrics) {
+
+  # Calculate differences between first and other scenarios
+  base_scenario <- comparison_data[1, ]
+
+  differences <- data.frame()
+
+  for (i in 2:nrow(comparison_data)) {
+    scenario <- comparison_data[i, ]
+
+    diff_row <- data.frame(
+      scenario = scenario$scenario,
+      delta_sources = scenario$n_sources - base_scenario$n_sources,
+      delta_sinks = scenario$n_sinks - base_scenario$n_sinks,
+      delta_surplus = scenario$total_surplus_kg - base_scenario$total_surplus_kg,
+      delta_deficit = scenario$total_deficit_kg - base_scenario$total_deficit_kg,
+      pct_change_sources = (scenario$n_sources - base_scenario$n_sources) /
+        base_scenario$n_sources * 100,
+      stringsAsFactors = FALSE
+    )
+
+    differences <- rbind(differences, diff_row)
+  }
+
+  return(list(
+    base_scenario = base_scenario$scenario,
+    differences = differences,
+    total_scenarios = nrow(comparison_data)
+  ))
+}
+
+
+#' Create Comparison Plots
+#'
+#' @param comparison_data Data frame with scenario metrics
+#' @param metrics Character vector of metrics to plot
+#' @return List of ggplot objects
+#' @keywords internal
+create_comparison_plots <- function(comparison_data, metrics) {
+
+  plots <- list()
+
+  # 1. Bar chart of classification counts
+  class_data <- comparison_data[, c("scenario", "n_sources", "n_sinks",
+                                    "n_balanced", "n_excluded")]
+  class_long <- tidyr::pivot_longer(
+    class_data,
+    cols = c("n_sources", "n_sinks", "n_balanced", "n_excluded"),
+    names_to = "classification",
+    values_to = "count"
+  )
+
+  class_long$classification <- factor(
+    class_long$classification,
+    levels = c("n_sources", "n_sinks", "n_balanced", "n_excluded"),
+    labels = c("Sources", "Sinks", "Balanced", "Excluded")
+  )
+
+  plots$bar_chart <- ggplot2::ggplot(class_long,
+                                     ggplot2::aes(x = scenario, y = count,
+                                                  fill = classification)) +
+    ggplot2::geom_bar(stat = "identity", position = "dodge") +
+    ggplot2::scale_fill_manual(values = c(
+      "Sources" = "#d62728",
+      "Sinks" = "#1f77b4",
+      "Balanced" = "#2ca02c",
+      "Excluded" = "#7f7f7f"
+    )) +
+    ggplot2::labs(
+      title = "Classification Counts by Scenario",
+      x = "Scenario",
+      y = "Number of Units",
+      fill = "Classification"
+    ) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      plot.title = ggplot2::element_text(size = 14, face = "bold")
+    )
+
+  # 2. Surplus/Deficit comparison
+  surplus_data <- comparison_data[, c("scenario", "total_surplus_kg", "total_deficit_kg")]
+  surplus_long <- tidyr::pivot_longer(
+    surplus_data,
+    cols = c("total_surplus_kg", "total_deficit_kg"),
+    names_to = "type",
+    values_to = "amount_kg"
+  )
+
+  surplus_long$type <- factor(
+    surplus_long$type,
+    levels = c("total_surplus_kg", "total_deficit_kg"),
+    labels = c("Total Surplus", "Total Deficit")
+  )
+
+  plots$surplus_deficit <- ggplot2::ggplot(surplus_long,
+                                           ggplot2::aes(x = scenario, y = amount_kg/1000,
+                                                        fill = type)) +
+    ggplot2::geom_bar(stat = "identity", position = "dodge") +
+    ggplot2::scale_fill_manual(values = c(
+      "Total Surplus" = "#d62728",
+      "Total Deficit" = "#1f77b4"
+    )) +
+    ggplot2::labs(
+      title = "Total Nitrogen Surplus and Deficit by Scenario",
+      x = "Scenario",
+      y = "Amount (Metric Tons)",
+      fill = ""
+    ) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      plot.title = ggplot2::element_text(size = 14, face = "bold"),
+      legend.position = "bottom"
+    )
+
+  # 3. Percentage change plot (if > 2 scenarios)
+  if (nrow(comparison_data) > 1) {
+    base_sources <- comparison_data$n_sources[1]
+    base_sinks <- comparison_data$n_sinks[1]
+
+    pct_change <- data.frame(
+      scenario = comparison_data$scenario[-1],
+      sources_pct = (comparison_data$n_sources[-1] - base_sources) / base_sources * 100,
+      sinks_pct = (comparison_data$n_sinks[-1] - base_sinks) / base_sinks * 100
+    )
+
+    pct_long <- tidyr::pivot_longer(
+      pct_change,
+      cols = c("sources_pct", "sinks_pct"),
+      names_to = "type",
+      values_to = "pct_change"
+    )
+
+    pct_long$type <- factor(
+      pct_long$type,
+      levels = c("sources_pct", "sinks_pct"),
+      labels = c("Sources", "Sinks")
+    )
+
+    plots$percent_change <- ggplot2::ggplot(pct_long,
+                                            ggplot2::aes(x = scenario, y = pct_change,
+                                                         fill = type)) +
+      ggplot2::geom_bar(stat = "identity", position = "dodge") +
+      ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+      ggplot2::scale_fill_manual(values = c(
+        "Sources" = "#d62728",
+        "Sinks" = "#1f77b4"
+      )) +
+      ggplot2::labs(
+        title = paste("Percent Change from", comparison_data$scenario[1]),
+        x = "Scenario",
+        y = "Percent Change (%)",
+        fill = ""
+      ) +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(
+        axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+        plot.title = ggplot2::element_text(size = 14, face = "bold"),
+        legend.position = "bottom"
+      )
+  }
+
+  return(plots)
+}

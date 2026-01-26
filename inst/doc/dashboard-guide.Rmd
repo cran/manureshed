@@ -1,0 +1,636 @@
+---
+title: "Using the Interactive Dashboard"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using the Interactive Dashboard}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview
+
+The manureshed interactive dashboard provides a user-friendly interface for exploring nutrient balance data without writing R code. This is ideal for:
+
+- Policy makers and decision makers
+- Extension agents and educators
+- Students learning about nutrient management
+- Quick exploratory analysis
+- Presentations and demonstrations
+
+## Installation Requirements
+
+The dashboard requires several additional packages beyond the core manureshed package:
+
+```{r install_deps, eval=FALSE}
+# Install dashboard dependencies
+install.packages(c(
+  "shiny",
+  "shinydashboard",
+  "leaflet",
+  "plotly",
+  "DT"
+))
+```
+
+These packages are **optional** - manureshed works fine without them if you only need the programmatic interface. They're only needed for the interactive dashboard.
+
+## Launching the Dashboard
+
+Once the dependencies are installed, launch the dashboard with:
+
+```{r launch, eval=FALSE}
+library(manureshed)
+
+# Launch the dashboard
+launch_dashboard()
+```
+
+The dashboard will open in your default web browser. By default, it uses a random available port. You can specify a port:
+
+```{r launch_port, eval=FALSE}
+# Launch on specific port
+launch_dashboard(port = 3838)
+```
+
+## Dashboard Interface
+
+### Main Components
+
+The dashboard has four main sections:
+
+1. **Sidebar**: Analysis parameters and controls
+2. **Map Tab**: Interactive spatial visualization
+3. **Statistics Tab**: Summary metrics and plots
+4. **Data Table Tab**: Detailed results table
+5. **Help Tab**: Documentation and information
+
+### Sidebar Controls
+
+#### Analysis Parameters
+
+**Spatial Scale:**
+- County: ~3,000 units, good for policy analysis
+- HUC8 Watershed: ~2,000 units, good for watershed management
+- HUC2 Region: 18 units, good for regional overview
+
+**Year:**
+- Slider from 2007-2016
+- 2007-2016: WWTP data available
+- Earlier years: Agricultural data only
+
+**Nutrient:**
+- Nitrogen
+- Phosphorus
+
+**Include Wastewater Treatment Plants:**
+- Checked: Shows integrated agricultural + WWTP analysis
+- Unchecked: Shows agricultural-only analysis
+
+**Advanced Options** (click "Show advanced options"):
+- Cropland Threshold: Minimum cropland area for inclusion (default: 1,234 acres)
+
+#### Action Buttons
+
+**Run Analysis:**
+- Click to execute the analysis with selected parameters
+- Shows progress indicator
+- Displays notification when complete
+
+**Download Data:**
+- Exports results as CSV file
+- Includes all analysis columns
+
+## Using the Map Tab
+
+### Interactive Map Features
+
+The map tab displays a color-coded interactive map of nutrient classifications:
+
+**Color Legend:**
+- **Red**: Nutrient sources (surplus)
+- **Blue**: Sinks with deficit (no fertilizer use)
+- **Purple**: Sinks with deficit (despite fertilizer use)
+- **Green**: Within watershed/county (balanced with WWTP)
+- **Light blue**: Excluded (below cropland threshold)
+
+**Interaction:**
+- **Zoom**: Scroll wheel or +/- buttons
+- **Pan**: Click and drag
+- **Click**: See detailed information popup
+- **Hover**: Highlight individual units
+
+**Popup Information:**
+When you click a map area, you'll see:
+- Unit ID (FIPS code, HUC8, or HUC2)
+- Classification
+- Surplus/deficit amount (kg)
+- Cropland area (acres)
+
+### Map Navigation Tips
+
+**Finding Specific Areas:**
+1. Zoom in to your region of interest
+2. Use the search function in your browser (Ctrl+F / Cmd+F)
+3. Click on areas to identify them
+
+**Comparing Regions:**
+1. Run analysis with WWTP included
+2. Note colors and patterns
+3. Uncheck WWTP box
+4. Run analysis again
+5. Compare how classifications change
+
+## Using the Statistics Tab
+
+### Value Boxes
+
+Four key metrics displayed at the top:
+
+1. **Sources**: Red box - nutrient surplus areas
+2. **Sink (Deficit)**: Blue box - deficit without fertilizer
+3. **Sink (Fertilizer)**: Purple box - deficit despite fertilizer
+4. **Within Watershed/County**: Green box - balanced (WWTP included)
+5. **Excluded**: Light blue box - below threshold
+
+### Classification Distribution
+
+**Pie Chart:**
+- Shows proportions of each classification
+- Interactive: Hover to see exact counts
+- Click legend items to show/hide categories
+
+### Surplus/Deficit Distribution
+
+**Histogram:**
+- Shows distribution of surplus (positive) and deficit (negative) values
+- Interactive: Hover to see bin counts
+- Zoom by clicking and dragging
+
+### Summary Statistics
+
+Text output showing:
+- Analysis parameters used
+- Total units analyzed
+- Classification counts
+- Statistical summary of surplus/deficit values
+
+## Using the Data Table Tab
+
+### Interactive Table Features
+
+The data table provides detailed results with:
+
+**Search:**
+- Global search box (top right)
+- Column-specific search (top of each column)
+
+**Sorting:**
+- Click column headers to sort
+- Click again to reverse sort
+- Multi-column sort: Shift+click
+
+**Filtering:**
+- Use column search boxes
+- Type partial matches
+- Filter by multiple columns
+
+**Pagination:**
+- Choose rows per page (10, 25, 50, 100)
+- Navigate between pages
+
+### Useful Filters
+
+**Find All Sources:**
+```
+In classification column filter: type "Source"
+```
+
+**Find High Surplus Areas:**
+```
+Sort by surplus column (descending)
+Look at top entries
+```
+
+**Find Specific State:**
+```
+In ID column filter (for county scale): type state FIPS code
+Example: "19" for Iowa
+```
+
+## Help Tab
+
+The Help tab provides:
+- About manureshed information
+- How to use instructions
+- Classification definitions
+- Package version
+- Link to documentation
+
+## Workflow Examples
+
+### Example 1: Basic State Analysis
+
+**Goal:** Analyze Iowa watersheds in 2016
+
+**Steps:**
+1. Launch dashboard: `launch_dashboard()`
+2. Set Scale: HUC8 Watershed
+3. Set Year: 2016
+4. Set Nutrient: Nitrogen
+5. Check: Include Wastewater Treatment Plants
+6. Click: Run Analysis
+7. Wait for completion notification
+8. Explore results in Map tab
+9. Click Download Data to save results
+
+### Example 2: Compare Agricultural vs. Integrated
+
+**Goal:** See how WWTP changes classifications
+
+**Steps:**
+1. Set parameters (e.g., HUC8, 2016, Nitrogen)
+2. Check: Include WWTP
+3. Click: Run Analysis
+4. Note the Statistics tab value boxes
+5. Uncheck: Include WWTP
+6. Observe how value boxes change
+7. Compare the differences
+
+**What to Look For:**
+- How many sources remain?
+- How many sinks become "Within Watershed"?
+- How does total surplus/deficit change?
+
+### Example 3: Year-over-Year Exploration
+
+**Goal:** Explore temporal trends
+
+**Steps:**
+1. Set Scale: County
+2. Set Nutrient: Nitrogen
+3. Set Year: 2010
+4. Check: Include WWTP
+5. Run Analysis
+6. Note key statistics
+7. Change Year: 2013
+8. Run Analysis again
+9. Compare with 2010 results
+10. Repeat for 2016
+
+**Document Your Findings:**
+- Screenshot the Statistics tab for each year
+- Download data files for each year
+- Use scenario comparison function for formal analysis
+
+### Example 4: Threshold Sensitivity
+
+**Goal:** See how threshold affects excluded areas
+
+**Steps:**
+1. Click: Show advanced options
+2. Set Threshold: 500 acres
+3. Run Analysis
+4. Note number in "Excluded" box
+5. Set Threshold: 1234 acres (default)
+6. Run Analysis
+7. Note change in "Excluded"
+8. Set Threshold: 2000 acres
+9. Run Analysis
+10. Compare all three
+
+### Example 5: Create Presentation Materials
+
+**Goal:** Generate maps for a presentation
+
+**Steps:**
+1. Set desired parameters
+2. Run Analysis
+3. Map tab: Take screenshot (Print Screen / Cmd+Shift+4)
+4. Statistics tab: Take screenshot of charts
+5. Arrange screenshots in presentation software
+
+**Tips:**
+- Zoom map to desired extent before screenshot
+- Use full-screen browser mode for cleaner screenshots
+- Consider running multiple scenarios
+
+## Downloading Results
+
+### Data Download
+
+Click "Download Data" button to export a CSV file containing:
+
+**Columns Include:**
+- Unit ID (FIPS, HUC8, or HUC2)
+- Cropland area
+- Surplus/deficit values
+- Classifications
+- If WWTP included: combined classifications and surplus
+
+**File Name Format:**
+```
+manureshed_[scale]_[year]_[nutrient].csv
+```
+
+Example: `manureshed_huc8_2016_nitrogen.csv`
+
+### Using Downloaded Data
+
+Import into spreadsheet software:
+
+```{r import_excel, eval=FALSE}
+# In Excel or Google Sheets:
+# File > Import > CSV
+# Select the downloaded file
+```
+
+Further analysis in R:
+
+```{r import_r, eval=FALSE}
+# Read downloaded data
+data <- read.csv("manureshed_huc8_2016_nitrogen.csv")
+
+# Filter to sources only
+sources <- data[data$N_class == "Source", ]
+
+# Calculate statistics
+mean(sources$N_surplus)
+```
+
+## Performance Tips
+
+### For Faster Analysis
+
+**Choose Appropriate Scale:**
+- HUC2: Fastest (~18 units)
+- HUC8: Moderate (~2,000 units)
+- County: Slowest (~3,000 units)
+
+**Processing Times** (approximate):
+- County: 30-60 seconds
+- HUC8: 20-40 seconds
+- HUC2: 5-10 seconds
+
+**Note:** First run for a year is slower (downloads data), subsequent runs are faster (uses cached data).
+
+### Browser Performance
+
+**Recommended Browsers:**
+- Chrome (best performance)
+- Firefox (good performance)
+- Safari (good on Mac)
+- Edge (good on Windows)
+
+**If Dashboard is Slow:**
+- Close unused browser tabs
+- Try a different browser
+- Restart R session
+- Clear browser cache
+
+## Troubleshooting
+
+### Dashboard Won't Launch
+
+**Error: "Package 'shiny' is required"**
+
+Solution:
+```{r fix_shiny, eval=FALSE}
+install.packages(c("shiny", "shinydashboard", "leaflet", "plotly", "DT"))
+```
+
+**Error: "Could not find dashboard files"**
+
+Solution:
+```{r reinstall, eval=FALSE}
+devtools::install()  # Reinstall package
+```
+
+### Analysis Fails
+
+**Error during analysis:**
+
+Possible causes:
+- Network issue (downloading data)
+- Invalid year selection
+- Insufficient memory
+
+Solutions:
+1. Check internet connection
+2. Try a different year
+3. Use smaller scale (HUC2)
+4. Restart R session
+
+### Map Not Displaying
+
+**Map shows base layer only, no colored regions:**
+
+Possible causes:
+- Analysis not run yet
+- Analysis failed silently
+
+Solutions:
+1. Click "Run Analysis" again
+2. Check browser console (F12) for errors
+3. Try different parameters
+
+### Value Boxes Show Zero
+
+**Green box shows 0:**
+
+This is normal when:
+- Agricultural-only analysis (no "Within Watershed" category)
+- Area genuinely has no balanced units
+
+To see non-zero values:
+- Check "Include WWTP"
+- Run Analysis
+
+## Comparison with Programmatic Interface
+
+### When to Use Dashboard
+
+**Dashboard is better for:**
+- Quick exploration
+- Demonstrations
+- Non-R users
+- Visual presentations
+- Teaching
+
+### When to Use R Code
+
+**R code is better for:**
+- Batch processing multiple years
+- Custom analyses
+- Reproducible research
+- Integration with other analyses
+- Automated workflows
+
+### Hybrid Approach
+
+Use both together:
+
+```{r hybrid, eval=FALSE}
+# 1. Explore with dashboard
+launch_dashboard()
+# Identify interesting patterns
+
+# 2. Reproduce in code for publication
+results <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+
+# 3. Do advanced analysis
+comparison <- compare_scenarios(...)
+```
+
+## Sharing Results
+
+### For Colleagues Without R
+
+1. Take screenshots of dashboard
+2. Download data CSV files
+3. Email files with brief explanation
+
+### For R Users
+
+Share the code instead:
+
+```{r share_code, eval=FALSE}
+# Colleagues can reproduce with:
+library(manureshed)
+results <- run_builtin_analysis(
+  scale = "huc8",
+  year = 2016,
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+```
+
+### For Presentations
+
+1. Use dashboard in presentation mode
+2. Navigate to pre-analyzed results
+3. Use zoom to highlight areas of interest
+4. Switch between tabs to show different views
+
+## Accessibility Features
+
+The dashboard includes:
+- Keyboard navigation support
+- Screen reader compatibility
+- High contrast color schemes
+- Resizable text
+- Alternative text for graphics
+
+## Privacy and Security
+
+**Data Privacy:**
+- All analysis runs locally on your computer
+- No data sent to external servers
+- Downloads are saved to your local machine
+
+**Security:**
+- Dashboard runs on localhost (your computer only)
+- Not accessible from internet
+- No authentication required (local use only)
+
+## Advanced: Deploying for Teams
+
+If you want to share the dashboard with your team:
+
+### Option 1: Shinyapps.io
+
+Deploy to cloud hosting:
+
+```{r deploy_cloud, eval=FALSE}
+library(rsconnect)
+
+# Configure account (one time)
+setAccountInfo(name="your-account", token="...", secret="...")
+
+# Deploy
+deployApp(
+  appDir = system.file("shiny", "dashboard", package = "manureshed"),
+  appName = "manureshed-dashboard"
+)
+```
+
+### Option 2: RStudio Connect
+
+Deploy to institutional server:
+
+```{r deploy_connect, eval=FALSE}
+# Follow RStudio Connect deployment guide
+# Requires RStudio Connect server
+```
+
+### Option 3: Shiny Server
+
+Install on shared server:
+- Requires system administration access
+- Best for long-term team use
+- See Shiny Server documentation
+
+## Getting Help
+
+**Within Dashboard:**
+- Click "Help" tab for basic information
+
+**Package Documentation:**
+```{r get_help, eval=FALSE}
+?launch_dashboard
+?run_builtin_analysis
+```
+
+**Online Resources:**
+- Package website
+- GitHub repository
+- Vignettes: `browseVignettes("manureshed")`
+
+**Report Issues:**
+- Use GitHub issues for bug reports
+- Include error messages and screenshots
+- Describe steps to reproduce
+
+## Related Vignettes
+
+- `vignette("getting-started")` - Basic package usage
+- `vignette("scenario-comparison")` - Compare multiple scenarios
+- `vignette("advanced-features")` - Advanced analysis techniques
+- `vignette("data-integration")` - Using custom data
+
+## Summary
+
+The manureshed interactive dashboard provides:
+
+**Pros:**
+- No R coding required
+- Visual and intuitive
+- Great for exploration
+- Easy to demonstrate
+- Interactive maps and plots
+
+**Cons:**
+- Requires additional packages
+- Limited to one analysis at a time
+- Not suitable for batch processing
+- Less flexible than coding
+
+**Best For:**
+- Initial data exploration
+- Presentations and teaching
+- Non-programmer collaborators
+- Quick "what if" scenarios
+- Visual communication
+
+For reproducible research and complex workflows, use the programmatic interface alongside the dashboard.

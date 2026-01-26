@@ -60,7 +60,11 @@ utils::globalVariables(c(
   "facility_index", "boundary_index", "total_load", "facility_count",
 
   "YoY_Change", "YoY_Percent",
-  "use_builtin_wwtp"
+  "use_builtin_wwtp",
+
+  # others
+  "amount_kg", "classification", "count", "scenario", "type"
+
 ))
 
 
