@@ -1,3 +1,10 @@
+# manureshed 0.1.2
+
+- Fixed the hexa color problems
+- Added a cheatsheet
+- Added region comparison function
+
+
 # manureshed 0.1.1
 
 ## New Features

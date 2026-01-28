@@ -30,7 +30,7 @@ test_that("Color schemes are updated correctly", {
 
   # Check phosphorus colors
   expect_equal(unname(p_colors["Sink_Deficit"]), "#b2abd2")
-  expect_equal(unname(p_colors["Sink_Fertilizer"]), "#f1b")
+  expect_equal(unname(p_colors["Sink_Fertilizer"]), "#f1b6da")
   expect_equal(unname(p_colors["Source"]), "#b8e186")
 })
 

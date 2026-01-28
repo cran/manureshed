@@ -63,7 +63,8 @@ utils::globalVariables(c(
   "use_builtin_wwtp",
 
   # others
-  "amount_kg", "classification", "count", "scenario", "type"
+  "amount_kg", "classification", "count", "scenario", "type", "region",
+  "total_surplus", "total_deficit"
 
 ))
 
@@ -145,7 +146,7 @@ get_nutrient_colors <- function(nutrient = "nitrogen") {
   # UPDATED: Slightly adjusted nitrogen colors for publication differentiation
   # Still maintains colorblind-friendly palette
   nitrogen_colors <- c(
-    "Sink_Deficit" = "#a66",
+    "Sink_Deficit" = "#aa6666",
     "Sink_Fertilizer" = "#dfc27d",   # Kept same (tan)
     "Within_Watershed" = "#8c6bb1",  # CHANGED: Slightly different purple (was #9467bd)
     "Within_County" = "#8c6bb1",     # CHANGED: Slightly different purple (was #9467bd)
@@ -156,7 +157,7 @@ get_nutrient_colors <- function(nutrient = "nitrogen") {
   # Phosphorus colors remain unchanged
   phosphorus_colors <- c(
     "Sink_Deficit" = "#b2abd2",
-    "Sink_Fertilizer" = "#f1b",
+    "Sink_Fertilizer" = "#f1b6da",
     "Within_Watershed" = "#d01c8b",
     "Within_County" = "#d01c8b",
     "Source" = "#b8e186",
@@ -673,4 +674,35 @@ list_available_years <- function(scale = NULL) {
   message("      Custom WWTP data can be used for other years\n\n")
 
   invisible(available)
+}
+
+
+
+#' View Package Cheat Sheet
+#'
+#' Opens the manureshed package cheat sheet in your default PDF viewer.
+#' The cheat sheet provides a quick reference for common functions and workflows.
+#'
+#' @return Opens PDF in browser, returns path invisibly
+#' @export
+#' @examples
+#' \dontrun{
+#' # View the cheat sheet
+#' view_cheatsheet()
+#' }
+view_cheatsheet <- function() {
+  cheatsheet <- system.file("cheatsheet", "manureshed_cheatsheet.pdf",
+                            package = "manureshed")
+
+  if (cheatsheet == "") {
+    stop(
+      "Cheatsheet not found.\n\n",
+      "The cheatsheet may not be included in this package installation.\n",
+      call. = FALSE
+    )
+  }
+
+  message("Opening cheatsheet...")
+  utils::browseURL(cheatsheet)
+  return(invisible(cheatsheet))
 }

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Olatunde D. Akanbi" />
 
-<meta name="date" content="2026-01-26" />
+<meta name="date" content="2026-01-27" />
 
 <title>Getting Started with manureshed</title>
 
@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Getting Started with manureshed</h1>
 <h4 class="author">Olatunde D. Akanbi</h4>
-<h4 class="date">2026-01-26</h4>
+<h4 class="date">2026-01-27</h4>
 
 
 
@@ -352,17 +352,21 @@ balances at different spatial scales (county, HUC8 watershed, HUC2
 region) and can integrate wastewater treatment plant (WWTP) effluent
 data to show how municipal nutrient loads affect agricultural areas.</p>
 </div>
+<div id="view-cheatsheet" class="section level2">
+<h2>View cheatsheet</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">view_cheatsheet</span>()</span></code></pre></div>
+</div>
 <div id="quick-start---complete-analysis" class="section level2">
 <h2>Quick Start - Complete Analysis</h2>
 <p>The easiest way to get started is with
 <code>quick_analysis()</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Complete analysis with maps and plots</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">quick_analysis</span>(</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,           <span class="co"># Choose: &quot;county&quot;, &quot;huc8&quot;, or &quot;huc2&quot;</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2016</span>,              <span class="co"># Any year 1987-2016</span></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,   <span class="co"># Choose: &quot;nitrogen&quot;, &quot;phosphorus&quot;, or both</span></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span>       <span class="co"># Include wastewater plants (2007-2016 only)</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Complete analysis with maps and plots</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">quick_analysis</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,           <span class="co"># Choose: &quot;county&quot;, &quot;huc8&quot;, or &quot;huc2&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2016</span>,              <span class="co"># Any year 1987-2016</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,   <span class="co"># Choose: &quot;nitrogen&quot;, &quot;phosphorus&quot;, or both</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span>       <span class="co"># Include wastewater plants (2007-2016 only)</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>)</span></code></pre></div>
 <p>This creates: - Classification maps - WWTP facility maps<br />
 - Network plots - Comparison charts - All saved to your output
 directory</p>
@@ -371,38 +375,38 @@ directory</p>
 <h2>Step-by-Step Analysis</h2>
 <div id="check-available-data" class="section level3">
 <h3>1. Check Available Data</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># See what data is available</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">check_builtin_data</span>()</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Download all data (optional, ~40MB)</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="fu">download_all_data</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># See what data is available</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">check_builtin_data</span>()</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co"># Download all data (optional, ~40MB)</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="fu">download_all_data</span>()</span></code></pre></div>
 </div>
 <div id="basic-agricultural-analysis" class="section level3">
 <h3>2. Basic Agricultural Analysis</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Analyze just agricultural data</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;county&quot;</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2010</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">FALSE</span>    <span class="co"># No WWTP data</span></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>)</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co"># Quick summary</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="fu">summarize_results</span>(results)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Analyze just agricultural data</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;county&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2010</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">FALSE</span>    <span class="co"># No WWTP data</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co"># Quick summary</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="fu">summarize_results</span>(results)</span></code></pre></div>
 </div>
 <div id="add-wwtp-data" class="section level3">
 <h3>3. Add WWTP Data</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Analysis with wastewater plants (2007-2016 available)</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>results_wwtp <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2016</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="fu">c</span>(<span class="st">&quot;nitrogen&quot;</span>, <span class="st">&quot;phosphorus&quot;</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span></span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>)</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co"># See the difference WWTP makes</span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">compare_analyses</span>(results, results_wwtp, <span class="st">&quot;nitrogen&quot;</span>)</span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="fu">print</span>(comparison)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Analysis with wastewater plants (2007-2016 available)</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>results_wwtp <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2016</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="fu">c</span>(<span class="st">&quot;nitrogen&quot;</span>, <span class="st">&quot;phosphorus&quot;</span>),</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co"># See the difference WWTP makes</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">compare_analyses</span>(results, results_wwtp, <span class="st">&quot;nitrogen&quot;</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="fu">print</span>(comparison)</span></code></pre></div>
 </div>
 </div>
 <div id="understanding-the-results" class="section level2">
@@ -421,136 +425,136 @@ accept manure</li>
 </div>
 <div id="accessing-results" class="section level3">
 <h3>Accessing Results</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Agricultural data with classifications</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>agri_data <span class="ot">&lt;-</span> results<span class="sc">$</span>agricultural</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co"># WWTP facility data</span></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>wwtp_facilities <span class="ot">&lt;-</span> results<span class="sc">$</span>wwtp<span class="sc">$</span>nitrogen<span class="sc">$</span>facility_data</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co"># Combined results (agricultural + WWTP)</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>combined_data <span class="ot">&lt;-</span> results<span class="sc">$</span>integrated<span class="sc">$</span>nitrogen</span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co"># Analysis settings</span></span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>parameters <span class="ot">&lt;-</span> results<span class="sc">$</span>parameters</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Agricultural data with classifications</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>agri_data <span class="ot">&lt;-</span> results<span class="sc">$</span>agricultural</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co"># WWTP facility data</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>wwtp_facilities <span class="ot">&lt;-</span> results<span class="sc">$</span>wwtp<span class="sc">$</span>nitrogen<span class="sc">$</span>facility_data</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co"># Combined results (agricultural + WWTP)</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>combined_data <span class="ot">&lt;-</span> results<span class="sc">$</span>integrated<span class="sc">$</span>nitrogen</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co"># Analysis settings</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>parameters <span class="ot">&lt;-</span> results<span class="sc">$</span>parameters</span></code></pre></div>
 </div>
 </div>
 <div id="creating-maps" class="section level2">
 <h2>Creating Maps</h2>
 <div id="classification-maps" class="section level3">
 <h3>Classification Maps</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Basic nitrogen map</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>n_map <span class="ot">&lt;-</span> <span class="fu">map_agricultural_classification</span>(</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="at">data =</span> results<span class="sc">$</span>agricultural,</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="at">nutrient =</span> <span class="st">&quot;nitrogen&quot;</span>, </span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">classification_col =</span> <span class="st">&quot;N_class&quot;</span>,</span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Nitrogen Classifications&quot;</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>)</span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co"># Save the map</span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="fu">save_plot</span>(n_map, <span class="st">&quot;nitrogen_map.png&quot;</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">8</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Basic nitrogen map</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>n_map <span class="ot">&lt;-</span> <span class="fu">map_agricultural_classification</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="at">data =</span> results<span class="sc">$</span>agricultural,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="at">nutrient =</span> <span class="st">&quot;nitrogen&quot;</span>, </span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="at">classification_col =</span> <span class="st">&quot;N_class&quot;</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Nitrogen Classifications&quot;</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>)</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co"># Save the map</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="fu">save_plot</span>(n_map, <span class="st">&quot;nitrogen_map.png&quot;</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">8</span>)</span></code></pre></div>
 </div>
 <div id="wwtp-maps" class="section level3">
 <h3>WWTP Maps</h3>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Map WWTP facilities</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>facility_map <span class="ot">&lt;-</span> <span class="fu">map_wwtp_points</span>(</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  results<span class="sc">$</span>wwtp<span class="sc">$</span>nitrogen<span class="sc">$</span>spatial_data,</span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="at">nutrient =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Nitrogen WWTP Facilities&quot;</span></span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>)</span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co"># Map WWTP influence on agricultural areas</span></span>
-<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>influence_map <span class="ot">&lt;-</span> <span class="fu">map_wwtp_influence</span>(</span>
-<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  results<span class="sc">$</span>integrated<span class="sc">$</span>nitrogen,</span>
-<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="at">nutrient =</span> <span class="st">&quot;nitrogen&quot;</span>, </span>
-<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;WWTP Influence on Nitrogen&quot;</span></span>
-<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Map WWTP facilities</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>facility_map <span class="ot">&lt;-</span> <span class="fu">map_wwtp_points</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  results<span class="sc">$</span>wwtp<span class="sc">$</span>nitrogen<span class="sc">$</span>spatial_data,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="at">nutrient =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Nitrogen WWTP Facilities&quot;</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co"># Map WWTP influence on agricultural areas</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>influence_map <span class="ot">&lt;-</span> <span class="fu">map_wwtp_influence</span>(</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  results<span class="sc">$</span>integrated<span class="sc">$</span>nitrogen,</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  <span class="at">nutrient =</span> <span class="st">&quot;nitrogen&quot;</span>, </span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;WWTP Influence on Nitrogen&quot;</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 </div>
 <div id="working-with-different-years" class="section level2">
 <h2>Working with Different Years</h2>
 <div id="single-years" class="section level3">
 <h3>Single Years</h3>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Any year 1987-2016 for agricultural data</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>results_1990 <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(<span class="at">scale =</span> <span class="st">&quot;county&quot;</span>, <span class="at">year =</span> <span class="dv">1990</span>, </span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>                                     <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>, <span class="at">include_wwtp =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>results_2005 <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(<span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>, <span class="at">year =</span> <span class="dv">2005</span>, </span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>                                     <span class="at">nutrients =</span> <span class="st">&quot;phosphorus&quot;</span>, <span class="at">include_wwtp =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co"># WWTP data available 2007-2016</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>results_2012 <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(<span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>, <span class="at">year =</span> <span class="dv">2012</span>, </span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>                                     <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>, <span class="at">include_wwtp =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Any year 1987-2016 for agricultural data</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>results_1990 <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(<span class="at">scale =</span> <span class="st">&quot;county&quot;</span>, <span class="at">year =</span> <span class="dv">1990</span>, </span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>                                     <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>, <span class="at">include_wwtp =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>results_2005 <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(<span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>, <span class="at">year =</span> <span class="dv">2005</span>, </span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>                                     <span class="at">nutrients =</span> <span class="st">&quot;phosphorus&quot;</span>, <span class="at">include_wwtp =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co"># WWTP data available 2007-2016</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>results_2012 <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(<span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>, <span class="at">year =</span> <span class="dv">2012</span>, </span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>                                     <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>, <span class="at">include_wwtp =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 </div>
 <div id="multiple-years" class="section level3">
 <h3>Multiple Years</h3>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Analyze several years at once</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>batch_results <span class="ot">&lt;-</span> <span class="fu">batch_analysis_years</span>(</span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="at">years =</span> <span class="dv">2014</span><span class="sc">:</span><span class="dv">2016</span>,</span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;county&quot;</span>, </span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span></span>
-<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Analyze several years at once</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>batch_results <span class="ot">&lt;-</span> <span class="fu">batch_analysis_years</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="at">years =</span> <span class="dv">2014</span><span class="sc">:</span><span class="dv">2016</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;county&quot;</span>, </span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 </div>
 <div id="using-custom-wwtp-data" class="section level2">
 <h2>Using Custom WWTP Data</h2>
 <p>For years outside 2007-2016, provide your own WWTP data:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Use your own WWTP files</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>results_2020 <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(</span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2020</span>,  <span class="co"># Agricultural data available</span></span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  <span class="at">custom_wwtp_nitrogen =</span> <span class="st">&quot;my_wwtp_data_2020.csv&quot;</span>,</span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  <span class="at">wwtp_load_units =</span> <span class="st">&quot;lbs&quot;</span>  <span class="co"># Handle different units</span></span>
-<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Use your own WWTP files</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>results_2020 <span class="ot">&lt;-</span> <span class="fu">run_builtin_analysis</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2020</span>,  <span class="co"># Agricultural data available</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  <span class="at">custom_wwtp_nitrogen =</span> <span class="st">&quot;my_wwtp_data_2020.csv&quot;</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="at">wwtp_load_units =</span> <span class="st">&quot;lbs&quot;</span>  <span class="co"># Handle different units</span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div id="state-specific-analysis" class="section level2">
 <h2>State-Specific Analysis</h2>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Analyze a specific state</span></span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>texas_results <span class="ot">&lt;-</span> <span class="fu">run_state_analysis</span>(</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="at">state =</span> <span class="st">&quot;TX&quot;</span>,</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;county&quot;</span>,</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2016</span>,</span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span></span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>)</span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a></span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co"># Quick state analysis with maps</span></span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>ohio_quick <span class="ot">&lt;-</span> <span class="fu">quick_state_analysis</span>(</span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>  <span class="at">state =</span> <span class="st">&quot;OH&quot;</span>,</span>
-<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>, </span>
-<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2015</span>,</span>
-<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;phosphorus&quot;</span></span>
-<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Analyze a specific state</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>texas_results <span class="ot">&lt;-</span> <span class="fu">run_state_analysis</span>(</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="at">state =</span> <span class="st">&quot;TX&quot;</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;county&quot;</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2016</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;nitrogen&quot;</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  <span class="at">include_wwtp =</span> <span class="cn">TRUE</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co"># Quick state analysis with maps</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>ohio_quick <span class="ot">&lt;-</span> <span class="fu">quick_state_analysis</span>(</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>  <span class="at">state =</span> <span class="st">&quot;OH&quot;</span>,</span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">&quot;huc8&quot;</span>, </span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>  <span class="at">year =</span> <span class="dv">2015</span>,</span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>  <span class="at">nutrients =</span> <span class="st">&quot;phosphorus&quot;</span></span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div id="loading-individual-datasets" class="section level2">
 <h2>Loading Individual Datasets</h2>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Load specific datasets</span></span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>county_2016 <span class="ot">&lt;-</span> <span class="fu">load_builtin_nugis</span>(<span class="st">&quot;county&quot;</span>, <span class="dv">2016</span>)</span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>huc8_boundaries <span class="ot">&lt;-</span> <span class="fu">load_builtin_boundaries</span>(<span class="st">&quot;huc8&quot;</span>)</span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>wwtp_nitrogen <span class="ot">&lt;-</span> <span class="fu">load_builtin_wwtp</span>(<span class="st">&quot;nitrogen&quot;</span>, <span class="dv">2012</span>)</span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co"># Check what years are available</span></span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="fu">list_available_years</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Load specific datasets</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>county_2016 <span class="ot">&lt;-</span> <span class="fu">load_builtin_nugis</span>(<span class="st">&quot;county&quot;</span>, <span class="dv">2016</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>huc8_boundaries <span class="ot">&lt;-</span> <span class="fu">load_builtin_boundaries</span>(<span class="st">&quot;huc8&quot;</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>wwtp_nitrogen <span class="ot">&lt;-</span> <span class="fu">load_builtin_wwtp</span>(<span class="st">&quot;nitrogen&quot;</span>, <span class="dv">2012</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co"># Check what years are available</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="fu">list_available_years</span>()</span></code></pre></div>
 </div>
 <div id="tips-for-success" class="section level2">
 <h2>Tips for Success</h2>
 <div id="memory-management" class="section level3">
 <h3>Memory Management</h3>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># For large analyses, clear cache if needed</span></span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">clear_data_cache</span>()</span>
-<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co"># Check package health</span></span>
-<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="fu">health_check</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># For large analyses, clear cache if needed</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">clear_data_cache</span>()</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co"># Check package health</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="fu">health_check</span>()</span></code></pre></div>
 </div>
 <div id="quality-checks" class="section level3">
 <h3>Quality Checks</h3>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># Always validate your results</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">quick_check</span>(results)</span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co"># Get package citation</span></span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="fu">citation_info</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># Always validate your results</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">quick_check</span>(results)</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co"># Get package citation</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="fu">citation_info</span>()</span></code></pre></div>
 </div>
 </div>
 <div id="next-steps" class="section level2">
@@ -569,16 +573,16 @@ options<br />
 </div>
 <div id="getting-help" class="section level2">
 <h2>Getting Help</h2>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># Function documentation</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>?run_builtin_analysis</span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>?quick_analysis</span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>?map_agricultural_classification</span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co"># Package overview</span></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>?manureshed</span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a></span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="co"># Check if everything is working</span></span>
-<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="fu">health_check</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># Function documentation</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>?run_builtin_analysis</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>?quick_analysis</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>?map_agricultural_classification</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="co"># Package overview</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>?manureshed</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co"># Check if everything is working</span></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="fu">health_check</span>()</span></code></pre></div>
 <p>That’s it! You now know the basics of using <code>manureshed</code>
 for nutrient flow analysis.</p>
 </div>

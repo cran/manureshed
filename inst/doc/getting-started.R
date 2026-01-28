@@ -9,6 +9,10 @@ knitr::opts_chunk$set(
 ## ----setup--------------------------------------------------------------------
 library(manureshed)
 
+## ----cheat, eval=FALSE--------------------------------------------------------
+# view_cheatsheet()
+# 
+
 ## ----quick_start, eval=FALSE--------------------------------------------------
 # # Complete analysis with maps and plots
 # results <- quick_analysis(

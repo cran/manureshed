@@ -1,0 +1,122 @@
+---
+title: "manureshed Cheat Sheet"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+geometry: margin=0.5in
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+# MANURESHED QUICK REFERENCE
+
+## INSTALLATION
+```{r}
+install.packages("manureshed")
+library(manureshed)
+```
+
+## BASIC ANALYSIS
+```{r}
+# Simple analysis
+results <- run_builtin_analysis(
+  scale = "county",     # or "huc8", "huc2"
+  year = 2016,          # 1987-2016
+  nutrients = "nitrogen",
+  include_wwtp = TRUE
+)
+```
+
+## DATA LOADING
+```{r}
+# Load data manually
+nugis <- load_builtin_nugis("county", 2016)
+wwtp <- load_builtin_wwtp("nitrogen", 2016)
+boundaries <- load_builtin_boundaries("county")
+```
+
+## VISUALIZATION
+```{r}
+# Create maps
+map <- create_classification_map(results, "nitrogen")
+
+# View interactive dashboard
+launch_dashboard()
+```
+
+## COMPARISON
+```{r}
+# Compare scenarios
+base <- run_builtin_analysis(..., include_wwtp = FALSE)
+wwtp <- run_builtin_analysis(..., include_wwtp = TRUE)
+compare_scenarios(list("Base" = base, "WWTP" = wwtp))
+```
+
+## EXPORT
+```{r}
+# Export results
+export_gis(results, "output_dir")
+save_spatial_data(results, "results.rds")
+```
+
+## BATCH ANALYSIS
+```{r}
+# Multiple years
+batch_results <- batch_analysis_years(
+  years = 2010:2016,
+  scale = "huc8"
+)
+```
+
+## COMMON PATTERNS
+
+### County Analysis
+```{r}
+results <- run_builtin_analysis(
+  scale = "county", year = 2016, nutrients = "nitrogen"
+)
+```
+
+### State Analysis
+```{r}
+ohio <- run_state_analysis(
+  state = "OH", scale = "county", year = 2016
+)
+```
+
+### With Custom WWTP
+```{r}
+results <- run_builtin_analysis(
+  ...,
+  custom_wwtp_nitrogen = "my_wwtp.csv"
+)
+```
+
+## TROUBLESHOOTING
+
+**Slow downloads?** Enable caching:
+```{r}
+# Caching enabled by default
+data <- load_builtin_nugis("county", 2016)
+```
+
+**Check data availability:**
+```{r}
+list_available_years()
+check_builtin_data()
+```
+
+**Get help:**
+```{r}
+?run_builtin_analysis
+vignette("getting-started")
+```
+
+## RESOURCES
+
+- Documentation: https://exelegch.github.io/manureshed-docs/
+- CRAN: https://CRAN.R-project.org/package=manureshed
+
+---
+*Version 0.1.2 | More at: https://github.com/cwru-sdle/manureshed*
