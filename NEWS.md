@@ -1,3 +1,7 @@
+# manureshed 0.1.3
+
+- Fixed cache issue
+
 # manureshed 0.1.2
 
 - Fixed the hexa color problems

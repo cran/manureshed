@@ -552,8 +552,10 @@ download_all_data <- function(force_download = FALSE, verbose = TRUE) {
 #' @return Logical. TRUE if successful
 #' @export
 clear_data_cache <- function(confirm = TRUE, verbose = TRUE) {
-
-  cache_dir <- file.path(tools::R_user_dir("manureshed", "cache"), "data")
+  cache_dir <- getOption(
+    "manureshed.cache_dir",
+    file.path(tools::R_user_dir("manureshed", "cache"), "data")
+  )
 
   if (!dir.exists(cache_dir)) {
     if (verbose) message("No cache directory found")

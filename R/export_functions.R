@@ -27,38 +27,17 @@ export_for_gis <- function(results, output_dir = file.path(tempdir(), "gis_expor
 
   created_files <- list()
 
-  # Export agricultural results
   if ("agricultural" %in% names(results) && inherits(results$agricultural, "sf")) {
 
-    # Prepare data for export - handle duplicate columns
-    data_to_export <- results$agricultural
+    data_to_export <- .prepare_sf_for_export(results$agricultural)
 
-    # Get column names and find duplicates
-    col_names <- names(data_to_export)
-
-    # Remove geometry column temporarily for processing
-    geom <- sf::st_geometry(data_to_export)
-    data_df <- sf::st_drop_geometry(data_to_export)
-
-    # Keep only unique column names (first occurrence)
-    unique_cols <- !duplicated(names(data_df))
-    data_df <- data_df[, unique_cols, drop = FALSE]
-
-    # Reconstruct sf object
-    data_to_export <- sf::st_sf(data_df,
-                                geometry = sf::st_geometry(results$agricultural),
-                                crs = sf::st_crs(results$agricultural))  # ADD CRS
-
-    # Now export in requested formats
     if ("shapefile" %in% formats) {
       tryCatch({
         shp_file <- file.path(output_dir, "agricultural_results.shp")
         sf::st_write(data_to_export, shp_file, delete_dsn = TRUE, quiet = TRUE)
         created_files$agricultural_shp <- shp_file
         message("Created shapefile: ", shp_file)
-      }, error = function(e) {
-        warning("Shapefile export failed: ", e$message)
-      })
+      }, error = function(e) warning("Shapefile export failed: ", e$message))
     }
 
     if ("geojson" %in% formats) {
@@ -67,9 +46,7 @@ export_for_gis <- function(results, output_dir = file.path(tempdir(), "gis_expor
         sf::st_write(data_to_export, json_file, delete_dsn = TRUE, quiet = TRUE)
         created_files$agricultural_geojson <- json_file
         message("Created GeoJSON: ", json_file)
-      }, error = function(e) {
-        warning("GeoJSON export failed: ", e$message)
-      })
+      }, error = function(e) warning("GeoJSON export failed: ", e$message))
     }
 
     if ("kml" %in% formats) {
@@ -79,9 +56,7 @@ export_for_gis <- function(results, output_dir = file.path(tempdir(), "gis_expor
                      driver = "KML", quiet = TRUE)
         created_files$agricultural_kml <- kml_file
         message("Created KML: ", kml_file)
-      }, error = function(e) {
-        warning("KML export failed: ", e$message)
-      })
+      }, error = function(e) warning("KML export failed: ", e$message))
     }
 
     if ("gpkg" %in% formats) {
@@ -90,33 +65,22 @@ export_for_gis <- function(results, output_dir = file.path(tempdir(), "gis_expor
         sf::st_write(data_to_export, gpkg_file, delete_dsn = TRUE, quiet = TRUE)
         created_files$agricultural_gpkg <- gpkg_file
         message("Created GeoPackage: ", gpkg_file)
-      }, error = function(e) {
-        warning("GeoPackage export failed: ", e$message)
-      })
+      }, error = function(e) warning("GeoPackage export failed: ", e$message))
     }
   }
 
-  # Export integrated results if available
   if ("integrated" %in% names(results)) {
     for (nutrient in names(results$integrated)) {
       if (inherits(results$integrated[[nutrient]], "sf")) {
 
-        # Handle duplicates for integrated data too
-        data_to_export <- results$integrated[[nutrient]]
-        geom <- sf::st_geometry(data_to_export)
-        data_df <- sf::st_drop_geometry(data_to_export)
-        unique_cols <- !duplicated(names(data_df))
-        data_df <- data_df[, unique_cols, drop = FALSE]
-        data_to_export <- sf::st_sf(data_df, geometry = geom)
+        data_to_export <- .prepare_sf_for_export(results$integrated[[nutrient]])
 
         if ("shapefile" %in% formats) {
           tryCatch({
             shp_file <- file.path(output_dir, paste0(nutrient, "_integrated.shp"))
             sf::st_write(data_to_export, shp_file, delete_dsn = TRUE, quiet = TRUE)
             created_files[[paste0(nutrient, "_shp")]] <- shp_file
-          }, error = function(e) {
-            warning("Shapefile export failed for ", nutrient, ": ", e$message)
-          })
+          }, error = function(e) warning("Shapefile export failed for ", nutrient, ": ", e$message))
         }
 
         if ("geojson" %in% formats) {
@@ -124,9 +88,7 @@ export_for_gis <- function(results, output_dir = file.path(tempdir(), "gis_expor
             json_file <- file.path(output_dir, paste0(nutrient, "_integrated.geojson"))
             sf::st_write(data_to_export, json_file, delete_dsn = TRUE, quiet = TRUE)
             created_files[[paste0(nutrient, "_geojson")]] <- json_file
-          }, error = function(e) {
-            warning("GeoJSON export failed for ", nutrient, ": ", e$message)
-          })
+          }, error = function(e) warning("GeoJSON export failed for ", nutrient, ": ", e$message))
         }
       }
     }
@@ -222,6 +184,36 @@ export_for_policy <-  function(results, output_dir = file.path(tempdir(), "polic
 }
 
 # Helper functions (internal)
+
+
+
+
+# Internal: Clean sf object for GeoJSON/shapefile export
+# Handles case-insensitive duplicate names (GDAL requirement),
+# list-columns, and secondary sfc geometry columns
+.prepare_sf_for_export <- function(sf_obj) {
+  geom    <- sf::st_geometry(sf_obj)
+  crs     <- sf::st_crs(sf_obj)
+  data_df <- sf::st_drop_geometry(sf_obj)
+
+  # 1. Remove secondary sfc (geometry) columns
+  is_sfc <- vapply(data_df, inherits, logical(1), "sfc")
+  if (any(is_sfc)) data_df <- data_df[, !is_sfc, drop = FALSE]
+
+  # 2. Remove list-columns (not serializable by GDAL)
+  is_list <- vapply(data_df, is.list, logical(1))
+  if (any(is_list)) data_df <- data_df[, !is_list, drop = FALSE]
+
+  # 3. Case-insensitive deduplication (GDAL GeoJSON is case-insensitive)
+  unique_cols <- !duplicated(tolower(names(data_df)))
+  data_df <- data_df[, unique_cols, drop = FALSE]
+
+  sf::st_sf(data_df, geometry = geom, crs = crs)
+}
+
+
+
+
 
 create_publication_table <- function(results, output_file) {
   # Create LaTeX table

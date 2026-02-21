@@ -344,7 +344,10 @@
     wwtp_units_supported = c("kg", "lbs", "pounds", "tons"),
     crs_standard = "EPSG:5070 (Albers Equal Area Conic)",
     osf_repository = "https://osf.io/g39xa/",
-    cache_location = file.path(tools::R_user_dir("manureshed", "cache"), "data")
+    cache_location = getOption(
+      "manureshed.cache_dir",
+      file.path(tools::R_user_dir("manureshed", "cache"), "data")
+    )
   )
 }
 
@@ -496,20 +499,26 @@ health_check <- function(verbose = FALSE) {
 
   # Check 6: Cache directory access
   tryCatch({
-    cache_dir <- file.path(tools::R_user_dir("manureshed", "cache"), "data")
-    # Just check if we can create the directory, don't actually create files
-    if (!dir.exists(cache_dir)) {
-      # Test directory creation in a safe way
-      test_success <- dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
-      if (test_success) {
-        message("\u2713 Cache directory: OK\n")
+    cache_dir <- getOption(
+      "manureshed.cache_dir",
+      file.path(tools::R_user_dir("manureshed", "cache"), "data")
+    )
+    # Test writability of PARENT without creating anything
+    parent_dir <- dirname(cache_dir)
+    if (dir.exists(parent_dir) && file.access(parent_dir, mode = 2) == 0) {
+      message("\u2713 Cache directory: writable\n")
+      checks_passed <- checks_passed + 1
+    } else if (!dir.exists(parent_dir)) {
+      # Parent doesn't exist yet — check grandparent writability
+      grandparent <- dirname(parent_dir)
+      if (dir.exists(grandparent) && file.access(grandparent, mode = 2) == 0) {
+        message("\u2713 Cache directory: can be created\n")
         checks_passed <- checks_passed + 1
       } else {
-        message("\u2717 Cache directory: Cannot create\n")
+        message("\u2717 Cache directory: not writable\n")
       }
     } else {
-      message("\u2713 Cache directory: OK\n")
-      checks_passed <- checks_passed + 1
+      message("\u2717 Cache directory: not writable\n")
     }
   }, error = function(e) {
     message("\u2717 Cache directory: ERROR\n")

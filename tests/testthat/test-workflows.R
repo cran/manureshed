@@ -83,4 +83,5 @@ test_that("Cleanup test directories", {
   if (dir.exists("batch_enhanced_results")) {
     unlink("batch_enhanced_results", recursive = TRUE)
   }
+  expect_false(dir.exists("batch_enhanced_results"))
 })
