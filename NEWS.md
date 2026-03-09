@@ -1,3 +1,7 @@
+# manureshed 0.1.4
+
+- Fixed persistent cache issue
+
 # manureshed 0.1.3
 
 - Fixed cache issue

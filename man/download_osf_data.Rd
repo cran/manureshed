@@ -16,7 +16,9 @@ download_osf_data(
 
 \item{force_download}{Logical. Force re-download even if cached version exists}
 
-\item{cache_dir}{Character. Directory to cache downloaded data (default: user data dir)}
+\item{cache_dir}{Character. Directory to cache downloaded data. Defaults to
+\code{tempdir()} for CRAN compliance. For persistent caching across sessions,
+set \code{options(manureshed.cache_dir = tools::R_user_dir("manureshed", "cache"))}.}
 
 \item{verbose}{Logical. Show download progress}
 }

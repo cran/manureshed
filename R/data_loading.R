@@ -8,7 +8,9 @@
 #'
 #' @param dataset_name Character. Name of dataset to download
 #' @param force_download Logical. Force re-download even if cached version exists
-#' @param cache_dir Character. Directory to cache downloaded data (default: user data dir)
+#' @param cache_dir Character. Directory to cache downloaded data. Defaults to
+#'   \code{tempdir()} for CRAN compliance. For persistent caching across sessions,
+#'   set \code{options(manureshed.cache_dir = tools::R_user_dir("manureshed", "cache"))}.
 #' @param verbose Logical. Show download progress
 #' @return Path to cached data file
 #' @export
@@ -18,39 +20,38 @@ download_osf_data <- function(dataset_name, force_download = FALSE,
   # OSF project ID for manureshed
   osf_project_id <- "g39xa"
 
-  # OSF permanent file IDs - CONFIGURED WITH YOUR ACTUAL IDs
+  # OSF permanent file IDs
   dataset_file_ids <- list(
     # NuGIS datasets
-    "nugis_county_data" = "689a80e81a020593fca5e8b4",
-    "nugis_huc8_data" = "689a80e66880a2c5318935f0",
-    "nugis_huc2_data" = "689a80e4ea0587a8dea0aeac",
+    "nugis_county_data"        = "689a80e81a020593fca5e8b4",
+    "nugis_huc8_data"          = "689a80e66880a2c5318935f0",
+    "nugis_huc2_data"          = "689a80e4ea0587a8dea0aeac",
 
     # Spatial boundaries
-    "county_boundaries" = "689a80dbfcf05a1374a5ea29",
-    "huc8_boundaries" = "689a80de8688b85a3e893403",
-    "huc2_boundaries" = "689a80df2582efb84a921b41",
+    "county_boundaries"        = "689a80dbfcf05a1374a5ea29",
+    "huc8_boundaries"          = "689a80de8688b85a3e893403",
+    "huc2_boundaries"          = "689a80df2582efb84a921b41",
 
-    # WWTP data - UPDATED FOR MULTI-YEAR
-    "wwtp_nitrogen_combined" = "689c97483efa05a3a93ccdd2",  # NEW
-    "wwtp_phosphorus_combined" = "689c97404cae9f37ea13c731", # NEW
+    # WWTP multi-year combined data
+    "wwtp_nitrogen_combined"   = "689c97483efa05a3a93ccdd2",
+    "wwtp_phosphorus_combined" = "689c97404cae9f37ea13c731",
 
     # Texas supplemental data
-    "texas_huc8_data" = "689a80e3bd495653dc921bc0",
-    "texas_huc8_boundaries" = "689a80d9aa71910946921ade"
+    "texas_huc8_data"          = "689a80e3bd495653dc921bc0",
+    "texas_huc8_boundaries"    = "689a80d9aa71910946921ade"
   )
 
-  # Also update the corresponding filenames
   dataset_filenames <- list(
-    "nugis_county_data" = "nugis_county_data.rda",
-    "nugis_huc8_data" = "nugis_huc8_data.rda",
-    "nugis_huc2_data" = "nugis_huc2_data.rda",
-    "county_boundaries" = "county_boundaries.rda",
-    "huc8_boundaries" = "huc8_boundaries.rda",
-    "huc2_boundaries" = "huc2_boundaries.rda",
-    "wwtp_nitrogen_combined" = "wwtp_nitrogen_combined.rda",    # UPDATED
-    "wwtp_phosphorus_combined" = "wwtp_phosphorus_combined.rda", # UPDATED
-    "texas_huc8_data" = "texas_huc8_data.rda",
-    "texas_huc8_boundaries" = "texas_huc8_boundaries.rda"
+    "nugis_county_data"        = "nugis_county_data.rda",
+    "nugis_huc8_data"          = "nugis_huc8_data.rda",
+    "nugis_huc2_data"          = "nugis_huc2_data.rda",
+    "county_boundaries"        = "county_boundaries.rda",
+    "huc8_boundaries"          = "huc8_boundaries.rda",
+    "huc2_boundaries"          = "huc2_boundaries.rda",
+    "wwtp_nitrogen_combined"   = "wwtp_nitrogen_combined.rda",
+    "wwtp_phosphorus_combined" = "wwtp_phosphorus_combined.rda",
+    "texas_huc8_data"          = "texas_huc8_data.rda",
+    "texas_huc8_boundaries"    = "texas_huc8_boundaries.rda"
   )
 
   if (!dataset_name %in% names(dataset_file_ids)) {
@@ -61,9 +62,15 @@ download_osf_data <- function(dataset_name, force_download = FALSE,
   # Get file ID
   file_id <- dataset_file_ids[[dataset_name]]
 
-  # Set up cache directory
+  # FIX 1: Set up cache directory - default to tempdir() to comply with CRAN
+  # policy (no writing to home directory without explicit user consent).
+  # Users who want persistent caching across sessions should set:
+  #   options(manureshed.cache_dir = tools::R_user_dir("manureshed", "cache"))
   if (is.null(cache_dir)) {
-    cache_dir <- file.path(tools::R_user_dir("manureshed", "cache"), "data")
+    cache_dir <- getOption(
+      "manureshed.cache_dir",
+      file.path(tempdir(), "manureshed", "data")
+    )
   }
 
   if (!dir.exists(cache_dir)) {
@@ -78,52 +85,40 @@ download_osf_data <- function(dataset_name, force_download = FALSE,
   needs_download <- force_download || !file.exists(local_file)
 
   if (needs_download) {
-    if (verbose) {
-      message("Downloading ", dataset_name, " from OSF...")
-    }
+    if (verbose) message("Downloading ", dataset_name, " from OSF...")
 
-    # Use the working Files API URL pattern
     download_url <- paste0("https://files.osf.io/v1/resources/", osf_project_id,
                            "/providers/osfstorage/", file_id)
 
-    if (verbose) {
-      message("  File ID: ", file_id)
-    }
+    if (verbose) message("  File ID: ", file_id)
 
     tryCatch({
       utils::download.file(
-        url = download_url,
+        url      = download_url,
         destfile = local_file,
-        mode = "wb",
-        method = "auto",
-        quiet = !verbose
+        mode     = "wb",
+        method   = "auto",
+        quiet    = !verbose
       )
 
-      # Validate download
-      if (file.exists(local_file) && file.size(local_file) > 1000) {  # At least 1KB
+      if (file.exists(local_file) && file.size(local_file) > 1000) {
         if (verbose) {
           file_size <- round(file.size(local_file) / 1024 / 1024, 2)
           message("  Downloaded successfully (", file_size, " MB)")
         }
       } else {
-        if (file.exists(local_file)) {
-          unlink(local_file) # Clean up failed download
-        }
+        if (file.exists(local_file)) unlink(local_file)
         stop("Download failed - file not created or too small")
       }
 
     }, error = function(e) {
-      if (file.exists(local_file)) {
-        unlink(local_file) # Clean up partial download
-      }
+      if (file.exists(local_file)) unlink(local_file)
       stop("Failed to download ", dataset_name, " from OSF: ", e$message,
            "\nURL: ", download_url)
     })
 
   } else {
-    if (verbose) {
-      message("Using cached version of ", dataset_name)
-    }
+    if (verbose) message("Using cached version of ", dataset_name)
   }
 
   return(local_file)
@@ -153,26 +148,19 @@ download_osf_data <- function(dataset_name, force_download = FALSE,
 #' }
 load_builtin_nugis <- function(scale, year = 2016, force_download = FALSE, verbose = TRUE) {
 
-  # Validate inputs
   if (!scale %in% c("county", "huc8", "huc2")) {
     stop("Scale must be 'county', 'huc8', or 'huc2'")
   }
 
-  # Get dataset name
   dataset_name <- paste0("nugis_", scale, "_data")
+  data_file    <- download_osf_data(dataset_name, force_download, verbose = verbose)
 
-  # Download/load data from OSF
-  data_file <- download_osf_data(dataset_name, force_download, verbose = verbose)
-
-  # Load the .rda file
   load_env <- new.env()
   load(data_file, envir = load_env)
 
-  # Extract the data object (should have same name as dataset_name)
   if (exists(dataset_name, envir = load_env)) {
     data <- get(dataset_name, envir = load_env)
   } else {
-    # Try to find any object in the loaded environment
     objects <- ls(load_env)
     if (length(objects) == 1) {
       data <- get(objects[1], envir = load_env)
@@ -181,12 +169,10 @@ load_builtin_nugis <- function(scale, year = 2016, force_download = FALSE, verbo
     }
   }
 
-  # Validate data structure
   if (!"Year" %in% names(data)) {
     stop("Year column not found in NuGIS data")
   }
 
-  # Filter for specified year
   data_year <- data[data$Year == year, ]
 
   if (nrow(data_year) == 0) {
@@ -215,7 +201,7 @@ load_builtin_nugis <- function(scale, year = 2016, force_download = FALSE, verbo
 #' @export
 #' @examples
 #' \donttest{
-#' # Load WWTP data for different years (2007-2016 available)
+#' # Load WWTP nitrogen data for different years (2007-2016 available)
 #' wwtp_n_2016 <- load_builtin_wwtp("nitrogen", 2016)
 #' wwtp_n_2012 <- load_builtin_wwtp("nitrogen", 2012)
 #' wwtp_n_2007 <- load_builtin_wwtp("nitrogen", 2007)
@@ -233,21 +219,16 @@ load_builtin_wwtp <- function(nutrient, year = 2016, force_download = FALSE, ver
     stop("Nutrient must be 'nitrogen' or 'phosphorus'")
   }
 
-  # Validate year range
   if (!year %in% 2007:2016) {
     stop("Year must be between 2007 and 2016. Available years: 2007-2016")
   }
 
   dataset_name <- paste0("wwtp_", nutrient, "_combined")
+  data_file    <- download_osf_data(dataset_name, force_download, verbose = verbose)
 
-  # Download/load data from OSF
-  data_file <- download_osf_data(dataset_name, force_download, verbose = verbose)
-
-  # Load the .rda file
   load_env <- new.env()
   load(data_file, envir = load_env)
 
-  # Extract the data object
   if (exists(dataset_name, envir = load_env)) {
     data <- get(dataset_name, envir = load_env)
   } else {
@@ -259,12 +240,10 @@ load_builtin_wwtp <- function(nutrient, year = 2016, force_download = FALSE, ver
     }
   }
 
-  # Validate data structure
   if (!"Year" %in% names(data)) {
     stop("Year column not found in WWTP data")
   }
 
-  # Filter for specified year
   data_year <- data[data$Year == year, ]
 
   if (nrow(data_year) == 0) {
@@ -296,17 +275,12 @@ load_builtin_boundaries <- function(scale, force_download = FALSE, verbose = TRU
     stop("Scale must be 'county', 'huc8', or 'huc2'")
   }
 
-  # Get dataset name
   dataset_name <- paste0(scale, "_boundaries")
+  data_file    <- download_osf_data(dataset_name, force_download, verbose = verbose)
 
-  # Download/load data from OSF
-  data_file <- download_osf_data(dataset_name, force_download, verbose = verbose)
-
-  # Load the .rda file
   load_env <- new.env()
   load(data_file, envir = load_env)
 
-  # Extract the data object
   if (exists(dataset_name, envir = load_env)) {
     boundaries <- get(dataset_name, envir = load_env)
   } else {
@@ -318,7 +292,6 @@ load_builtin_boundaries <- function(scale, force_download = FALSE, verbose = TRU
     }
   }
 
-  # Ensure proper CRS
   boundaries <- sf::st_transform(boundaries, crs = MANURESHED_CRS)
 
   if (verbose) {
@@ -329,112 +302,49 @@ load_builtin_boundaries <- function(scale, force_download = FALSE, verbose = TRU
   return(boundaries)
 }
 
-#' Load Built-in WWTP Data from OSF
-#'
-#' Load built-in WWTP data for specified year from OSF repository (2007-2016 available)
-#'
-#' @param nutrient Character. "nitrogen" or "phosphorus"
-#' @param year Numeric. Year to filter data (available: 2007-2016)
-#' @param force_download Logical. Force re-download even if cached
-#' @param verbose Logical. Show download progress
-#' @return Data frame with cleaned WWTP data for specified year
-#' @export
-load_builtin_wwtp <- function(nutrient, year = 2016, force_download = FALSE, verbose = TRUE) {
-
-  if (!nutrient %in% c("nitrogen", "phosphorus")) {
-    stop("Nutrient must be 'nitrogen' or 'phosphorus'")
-  }
-
-  # Validate year range
-  if (!year %in% 2007:2016) {
-    stop("Year must be between 2007 and 2016. Available years: 2007-2016")
-  }
-
-  dataset_name <- paste0("wwtp_", nutrient, "_combined")
-
-  # Download/load data from OSF
-  data_file <- download_osf_data(dataset_name, force_download, verbose = verbose)
-
-  # Load the .rda file
-  load_env <- new.env()
-  load(data_file, envir = load_env)
-
-  # Extract the data object
-  if (exists(dataset_name, envir = load_env)) {
-    data <- get(dataset_name, envir = load_env)
-  } else {
-    objects <- ls(load_env)
-    if (length(objects) == 1) {
-      data <- get(objects[1], envir = load_env)
-    } else {
-      stop("Could not find expected WWTP data in ", data_file)
-    }
-  }
-
-  # Validate data structure
-  if (!"Year" %in% names(data)) {
-    stop("Year column not found in WWTP data")
-  }
-
-  # Filter for specified year
-  data_year <- data[data$Year == year, ]
-
-  if (nrow(data_year) == 0) {
-    available_years <- sort(unique(data$Year))
-    stop("No WWTP data found for year: ", year,
-         ". Available years: ", paste(available_years, collapse = ", "))
-  }
-
-  if (verbose) {
-    message("Loaded WWTP ", nutrient, " data for year ", year)
-    message("Number of facilities: ", nrow(data_year))
-  }
-
-  return(data_year)
-}
-
 #' Check Data Availability from OSF
 #'
-# Check what datasets are available from OSF repository and whats cached locally
+#' Check what datasets are available from the OSF repository and which are
+#' cached locally.
 #'
 #' @param verbose Logical. Show detailed information about cache status
 #' @return List showing available datasets and cache status
 #' @export
 check_builtin_data <- function(verbose = FALSE) {
 
-  # Updated dataset list - removed old single-year WWTP files
   all_datasets <- c(
     "nugis_county_data", "nugis_huc8_data", "nugis_huc2_data",
     "county_boundaries", "huc8_boundaries", "huc2_boundaries",
-    "wwtp_nitrogen_combined", "wwtp_phosphorus_combined",  # UPDATED
+    "wwtp_nitrogen_combined", "wwtp_phosphorus_combined",
     "texas_huc8_data", "texas_huc8_boundaries"
   )
 
-  # Check cache directory
-  cache_dir <- file.path(tools::R_user_dir("manureshed", "cache"), "data")
+  # FIX 2: Use same tempdir()-based default as download_osf_data()
+  cache_dir <- getOption(
+    "manureshed.cache_dir",
+    file.path(tempdir(), "manureshed", "data")
+  )
 
   available_data <- list(
-    nugis_scales = c("county", "huc8", "huc2"),
-    boundary_scales = c("county", "huc8", "huc2"),
-    wwtp_available = TRUE,
-    wwtp_years = 2007:2016,  # UPDATED
+    nugis_scales       = c("county", "huc8", "huc2"),
+    boundary_scales    = c("county", "huc8", "huc2"),
+    wwtp_available     = TRUE,
+    wwtp_years         = 2007:2016,
     texas_data_available = TRUE,
-    osf_project = "https://osf.io/g39xa/",
-    cache_directory = cache_dir,
-    cached_datasets = character(0),
-    missing_datasets = character(0),
-    nugis_years = list(
+    osf_project        = "https://osf.io/g39xa/",
+    cache_directory    = cache_dir,
+    cached_datasets    = character(0),
+    missing_datasets   = character(0),
+    nugis_years        = list(
       county = 1987:2016,
-      huc8 = 1987:2016,
-      huc2 = 1987:2016
+      huc8   = 1987:2016,
+      huc2   = 1987:2016
     )
   )
 
-  # Check which datasets are cached
   if (dir.exists(cache_dir)) {
-    cached_files <- list.files(cache_dir, pattern = "\\.rda$", full.names = FALSE)
+    cached_files    <- list.files(cache_dir, pattern = "\\.rda$", full.names = FALSE)
     cached_datasets <- gsub("\\.rda$", "", cached_files)
-
     available_data$cached_datasets <- intersect(cached_datasets, all_datasets)
     available_data$missing_datasets <- setdiff(all_datasets, cached_datasets)
   } else {
@@ -446,31 +356,27 @@ check_builtin_data <- function(verbose = FALSE) {
     message("============================")
     message("OSF Repository: https://osf.io/g39xa/")
     message("Cache Directory: ", cache_dir, "\n")
-
     message("Cache Status:")
     message("- Cached locally: ", length(available_data$cached_datasets), "/", length(all_datasets))
     message("- Not yet downloaded: ", length(available_data$missing_datasets), "/", length(all_datasets), "\n")
+
     if (length(available_data$cached_datasets) > 0) {
       message("Cached Datasets:\n")
-      for (dataset in available_data$cached_datasets) {
-        message("  OK", dataset, "\n")
-      }
+      for (dataset in available_data$cached_datasets) message("  OK ", dataset, "\n")
       message("\n")
     }
 
     if (length(available_data$missing_datasets) > 0) {
       message("Not Yet Downloaded:\n")
-      for (dataset in available_data$missing_datasets) {
-        message("  --", dataset, "\n")
-      }
+      for (dataset in available_data$missing_datasets) message("  -- ", dataset, "\n")
       message("\nRun download_all_data() to download all datasets\n\n")
     }
 
     message("Available Data:\n")
-    message("- NuGIS scales:", paste(available_data$nugis_scales, collapse = ", "), "\n")
+    message("- NuGIS scales: ", paste(available_data$nugis_scales, collapse = ", "), "\n")
     message("- NuGIS years: 1987-2016\n")
-    message("- WWTP data: 2007-2016 (nitrogen, phosphorus)\n")  # UPDATED
-    message("- Total datasets:", length(all_datasets), "\n")
+    message("- WWTP data: 2007-2016 (nitrogen, phosphorus)\n")
+    message("- Total datasets: ", length(all_datasets), "\n")
   }
 
   return(available_data)
@@ -486,11 +392,10 @@ check_builtin_data <- function(verbose = FALSE) {
 #' @export
 download_all_data <- function(force_download = FALSE, verbose = TRUE) {
 
-  # UPDATED dataset list
   all_datasets <- c(
     "nugis_county_data", "nugis_huc8_data", "nugis_huc2_data",
     "county_boundaries", "huc8_boundaries", "huc2_boundaries",
-    "wwtp_nitrogen_combined", "wwtp_phosphorus_combined",  # UPDATED
+    "wwtp_nitrogen_combined", "wwtp_phosphorus_combined",
     "texas_huc8_data", "texas_huc8_boundaries"
   )
 
@@ -500,29 +405,23 @@ download_all_data <- function(force_download = FALSE, verbose = TRUE) {
   }
 
   failed_downloads <- character(0)
-  start_time <- Sys.time()
+  start_time       <- Sys.time()
 
   for (i in seq_along(all_datasets)) {
     dataset <- all_datasets[i]
-
-    if (verbose) {
-      message("\n[", i, "/", length(all_datasets), "] ", dataset, "...")
-    }
+    if (verbose) message("\n[", i, "/", length(all_datasets), "] ", dataset, "...")
 
     tryCatch({
       download_osf_data(dataset, force_download, verbose = verbose)
     }, error = function(e) {
       failed_downloads <<- c(failed_downloads, dataset)
-      if (verbose) {
-        message("  FAILED: ", e$message)
-      }
+      if (verbose) message("  FAILED: ", e$message)
     })
   }
 
-  end_time <- Sys.time()
+  end_time      <- Sys.time()
   download_time <- as.numeric(difftime(end_time, start_time, units = "mins"))
-
-  success <- length(failed_downloads) == 0
+  success       <- length(failed_downloads) == 0
 
   if (verbose) {
     message("\n", paste(rep("=", 50), collapse = ""))
@@ -530,14 +429,10 @@ download_all_data <- function(force_download = FALSE, verbose = TRUE) {
     message("Time: ", round(download_time, 1), " minutes")
     message("Successful: ", length(all_datasets) - length(failed_downloads),
             "/", length(all_datasets), " datasets")
-
     if (length(failed_downloads) > 0) {
       message("Failed: ", paste(failed_downloads, collapse = ", "))
     }
-
-    if (success) {
-      message("All datasets downloaded successfully!")
-    }
+    if (success) message("All datasets downloaded successfully!")
   }
 
   return(success)
@@ -552,9 +447,11 @@ download_all_data <- function(force_download = FALSE, verbose = TRUE) {
 #' @return Logical. TRUE if successful
 #' @export
 clear_data_cache <- function(confirm = TRUE, verbose = TRUE) {
+
+  # FIX 3: Use same tempdir()-based default as download_osf_data()
   cache_dir <- getOption(
     "manureshed.cache_dir",
-    file.path(tools::R_user_dir("manureshed", "cache"), "data")
+    file.path(tempdir(), "manureshed", "data")
   )
 
   if (!dir.exists(cache_dir)) {
@@ -572,8 +469,8 @@ clear_data_cache <- function(confirm = TRUE, verbose = TRUE) {
   total_size <- sum(file.size(cache_files), na.rm = TRUE) / 1024 / 1024
 
   if (confirm) {
-    message("Clear", length(cache_files), "cached files (",
-        round(total_size, 1), "MB)? (y/N): ")
+    message("Clear ", length(cache_files), " cached files (",
+            round(total_size, 1), " MB)? (y/N): ")
     response <- readline()
     if (!tolower(response) %in% c("y", "yes")) {
       message("Cancelled")
@@ -585,7 +482,7 @@ clear_data_cache <- function(confirm = TRUE, verbose = TRUE) {
     unlink(cache_files)
     if (verbose) {
       message("Cleared ", length(cache_files), " files (",
-              round(total_size, 1), "MB)")
+              round(total_size, 1), " MB)")
     }
     return(TRUE)
   }, error = function(e) {
@@ -603,11 +500,8 @@ clear_data_cache <- function(confirm = TRUE, verbose = TRUE) {
 #' @export
 test_osf_connection <- function(verbose = TRUE) {
 
-  if (verbose) {
-    message("Testing OSF connection...")
-  }
+  if (verbose) message("Testing OSF connection...")
 
-  # Test with Texas boundaries (should be smallest file)
   tryCatch({
     temp_file <- download_osf_data("texas_huc8_boundaries",
                                    force_download = TRUE, verbose = verbose)
@@ -615,13 +509,11 @@ test_osf_connection <- function(verbose = TRUE) {
     if (file.exists(temp_file) && file.size(temp_file) > 0) {
       if (verbose) {
         message("OSF connection test: SUCCESS")
-        message("Downloaded file size: ", round(file.size(temp_file)/1024, 2), " KB")
+        message("Downloaded file size: ", round(file.size(temp_file) / 1024, 2), " KB")
       }
       return(TRUE)
     } else {
-      if (verbose) {
-        message("OSF connection test: FAILED - no file created")
-      }
+      if (verbose) message("OSF connection test: FAILED - no file created")
       return(FALSE)
     }
 

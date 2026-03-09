@@ -10,13 +10,6 @@ load_builtin_wwtp(
   force_download = FALSE,
   verbose = TRUE
 )
-
-load_builtin_wwtp(
-  nutrient,
-  year = 2016,
-  force_download = FALSE,
-  verbose = TRUE
-)
 }
 \arguments{
 \item{nutrient}{Character. "nitrogen" or "phosphorus"}
@@ -29,17 +22,13 @@ load_builtin_wwtp(
 }
 \value{
 Data frame with cleaned WWTP data for specified year
-
-Data frame with cleaned WWTP data for specified year
 }
 \description{
-Load built-in WWTP data for specified year from OSF repository (2007-2016 available)
-
 Load built-in WWTP data for specified year from OSF repository (2007-2016 available)
 }
 \examples{
 \donttest{
-# Load WWTP data for different years (2007-2016 available)
+# Load WWTP nitrogen data for different years (2007-2016 available)
 wwtp_n_2016 <- load_builtin_wwtp("nitrogen", 2016)
 wwtp_n_2012 <- load_builtin_wwtp("nitrogen", 2012)
 wwtp_n_2007 <- load_builtin_wwtp("nitrogen", 2007)
